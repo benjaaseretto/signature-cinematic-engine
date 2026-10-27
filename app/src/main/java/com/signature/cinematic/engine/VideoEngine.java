@@ -631,12 +631,12 @@ public final class VideoEngine implements GlRenderer.FrameHook, CameraController
         r.setSlowdown(slowdown);
         try {
             Surface s = r.prepare(orientationHint);
+            gl.setEncoderDecimation(timelapse);
+            gl.setEncoderSurface(s, r.width, r.height, !mode.encoderPortrait);
             r.start();
             pipeline.getWb().setEnabled(true);
             metrics.reset(mode.fps, true);
             recorder = r;
-            gl.setEncoderDecimation(timelapse);
-            gl.setEncoderSurface(s, r.width, r.height, !mode.encoderPortrait);
         } catch (IOException | RuntimeException e) {
             gl.setEncoderDecimation(1);
             recorder = null;
@@ -747,7 +747,7 @@ public final class VideoEngine implements GlRenderer.FrameHook, CameraController
     @Override
     public long encoderTimeNs(long timestampNs) {
         Recorder r = recorder;
-        return r != null ? r.presentationNs(timestampNs) : 0L;
+        return r != null ? r.presentationNs(timestampNs) : -1L;
     }
 
     // ------------------------------------------------------------ CameraController.Listener (hilo cámara)

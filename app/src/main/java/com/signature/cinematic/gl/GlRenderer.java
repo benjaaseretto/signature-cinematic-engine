@@ -207,6 +207,7 @@ public final class GlRenderer {
 
     public GlRenderer(FrameHook hook) {
         this.hook = hook;
+        Matrix.setIdentityM(identity, 0);
         thread.start();
         handler = new Handler(thread.getLooper());
     }
@@ -245,6 +246,7 @@ public final class GlRenderer {
     }
 
     private void initGl() {
+        Matrix.setIdentityM(identity, 0);
         egl = new EglCore();
         pbuffer = egl.createPbuffer(1, 1);
         egl.makeCurrent(pbuffer);
@@ -401,43 +403,18 @@ public final class GlRenderer {
 
     /**
      * Transición óptica multi-cámara (.5x <-> 1x <-> 3x):
-     * captura el cuadro saliente antes del cambio de sensor y aplica un crossfade S-curve de 210 ms
-     * combinado con desenfoque radial direccional y puente fotométrico de luminancia continua.
+     * delegada al hardware SAT (Sensor Array Transit) del ISP sin congelar cuadros ni alterar ganancia.
      */
     public void triggerLensTransition(float strength) {
-        this.lensMorph = Math.max(this.lensMorph, Math.min(0.60f, strength));
-        handler.post(() -> {
-            if (stableSceneLuma > 0.01f && lumaBridgeFrames == 0) {
-                targetBridgeLuma = stableSceneLuma;
-                lumaBridgeFrames = 48;
-            }
-            if (!isSwitchingCamera && !isLensCrossfading && egl != null && previewSurface != null && previewW > 0 && previewH > 0) {
-                lockHistoryAsFreezeBuffer();
-                isLensCrossfading = true;
-                waitingForNewCameraFrame = false;
-                newCameraSettleFrames = 1;
-                switchAlpha = 1.0f;
-                switchStartTimeNs = 0;
-            }
-        });
+        // No-op: el ISP ejecuta la transición SAT nativa sin saltos ni cuadros congelados.
     }
 
-    /** Notifica que el HAL conmutó de sensor físico para activar el puente fotométrico de luminancia sin latencia. */
+    /** Notifica que el HAL conmutó de sensor físico; invalida el PBO previo para no mezclar estadísticas. */
     public void notifySensorSwitch() {
-        sensorJustSwitched = true;
         handler.post(() -> {
-            if (stableSceneLuma > 0.01f) {
-                targetBridgeLuma = stableSceneLuma;
-                lumaBridgeFrames = 48;
-            }
-            if (!isSwitchingCamera && !isLensCrossfading && historyPrimed) {
-                lockHistoryAsFreezeBuffer();
-                isLensCrossfading = true;
-                waitingForNewCameraFrame = false;
-                newCameraSettleFrames = 1;
-                switchAlpha = 1.0f;
-                switchStartTimeNs = 0;
-            }
+            statsPboPrimed = false;
+            lumaBridgeFrames = 0;
+            lumaBridgeGain = 1.0f;
         });
     }
 
@@ -693,33 +670,7 @@ public final class GlRenderer {
         int extraRotation = (!producerRotated && sensorOrientation % 180 != 0) ? -sensorOrientation : 0;
         boolean mirror = false;
 
-        if (sensorJustSwitched) {
-            sensorJustSwitched = false;
-            if (stableSceneLuma > 0.01f) {
-                targetBridgeLuma = stableSceneLuma;
-                lumaBridgeFrames = 48;
-                // Medición síncrona de latencia cero en el fotograma 1 del nuevo sensor antes de dibujarlo
-                float firstFrameLuma = measureImmediateLuma(extraRotation, mirror);
-                if (firstFrameLuma > 0.008f) {
-                    lumaBridgeGain = Math.max(0.58f, Math.min(1.72f, targetBridgeLuma / firstFrameLuma));
-                }
-            }
-            if (!isSwitchingCamera && !isLensCrossfading && historyPrimed) {
-                lockHistoryAsFreezeBuffer();
-                isLensCrossfading = true;
-                waitingForNewCameraFrame = false;
-                newCameraSettleFrames = 1;
-                switchAlpha = 1.0f;
-                switchStartTimeNs = 0;
-            }
-        } else if (lumaBridgeFrames == 0) {
-            if (Math.abs(lumaBridgeGain - 1.0f) > 0.002f) {
-                lumaBridgeGain += (1.0f - lumaBridgeGain) * 0.08f;
-            } else {
-                lumaBridgeGain = 1.0f;
-            }
-        }
-        float gain = hook.prepareFrame(ts, baseMatrix, lookMatrix) * lumaBridgeGain;
+        float gain = hook.prepareFrame(ts, baseMatrix, lookMatrix);
         lastGain = gain;
         lastExtraRotation = extraRotation;
 
@@ -813,11 +764,7 @@ public final class GlRenderer {
             egl.makeCurrent(pbuffer);
             cs.onFrame(readRawFrame(extraRotation, mirror), RAW_W, RAW_H, ts);
         }
-        if (!isSwitchingCamera && !isLensCrossfading && !waitingForNewCameraFrame) {
-            egl.makeCurrent(pbuffer);
-            recordHistoryFrame(extraRotation, gain);
-        }
-        if ((lumaBridgeFrames > 0 || frameCount % statsInterval == 0) && !waitingForNewCameraFrame) {
+        if (frameCount % statsInterval == 0 && !waitingForNewCameraFrame) {
             egl.makeCurrent(pbuffer);
             measure(extraRotation, mirror, ts);
         }

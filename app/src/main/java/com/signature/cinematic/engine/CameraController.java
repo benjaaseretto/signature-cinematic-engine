@@ -265,7 +265,7 @@ public final class CameraController {
         b.addTarget(surface);
         b.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         b.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, strictFpsRange(mode.fps));
-        b.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_50HZ);
+        b.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO);
 
         long frameDurationNs = 1_000_000_000L / mode.fps;
         ExposureController.Output e = settings.exposure;
@@ -277,8 +277,7 @@ public final class CameraController {
             b.set(CaptureRequest.SENSOR_FRAME_DURATION, frameDurationNs);
         } else {
             b.set(CaptureRequest.CONTROL_AE_MODE, aeMode());
-            float targetEv = e.aeCompensationEv + (still == null ? 0.15f : 0f);
-            int idx = Math.round(targetEv / caps.aeCompStep);
+            int idx = Math.round(e.aeCompensationEv / caps.aeCompStep);
             idx = Math.max(caps.aeCompRange.getLower(), Math.min(caps.aeCompRange.getUpper(), idx));
             b.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, idx);
             if (caps.aeLock) {
@@ -877,11 +876,11 @@ public final class CameraController {
         handler.post(() -> {
             ExposureController.Output cur = settings.exposure;
             long now = SystemClock.elapsedRealtimeNanos();
-            boolean force = cur.manual != out.manual || cur.userManualPro != out.userManualPro || cur.aeLock != out.aeLock;
-            boolean deltaSignificant = Math.abs(cur.aeCompensationEv - out.aeCompensationEv) > 0.04f
-                    || Math.abs(cur.exposureNs - out.exposureNs) > cur.exposureNs / 32
-                    || Math.abs(cur.iso - out.iso) > Math.max(2, cur.iso / 32);
-            boolean intervalElapsed = (now - lastExposureSubmitNs) >= 16_000_000L && (now - lastZoomSubmitNs) >= 12_000_000L;
+            boolean force = cur.userManualPro != out.userManualPro || cur.aeLock != out.aeLock;
+            boolean deltaSignificant = Math.abs(cur.aeCompensationEv - out.aeCompensationEv) > 0.05f
+                    || (out.userManualPro && (Math.abs(cur.exposureNs - out.exposureNs) > cur.exposureNs / 32
+                            || Math.abs(cur.iso - out.iso) > Math.max(2, cur.iso / 32)));
+            boolean intervalElapsed = (now - lastExposureSubmitNs) >= 33_000_000L && (now - lastZoomSubmitNs) >= 16_000_000L;
             if (force || (deltaSignificant && intervalElapsed)) {
                 lastExposureSubmitNs = now;
                 settings.exposure = out;

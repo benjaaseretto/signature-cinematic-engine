@@ -203,27 +203,13 @@ final class Shaders {
             + "void main() {\n"
             + "  vec3 src = texture(uTex, vUv).rgb;\n"
             + "  if (uBypass > 0.5) { fragColor = vec4(src, 1.0); return; }\n"
-            // Micro-fusión óptica radial al conmutar entre lentes físicas (.5x <-> 1x <-> 3x):
-            // rastro radial Gaussiano de 6 muestras hacia el eje óptico que suaviza el salto de paralaje en video.
-            + "  if (uLensMorph > 0.01) {\n"
-            + "    vec2 radial = (vUv - vec2(0.5)) * (uLensMorph * 0.032);\n"
-            + "    vec3 c0 = src * 0.28;\n"
-            + "    c0 += texture(uTex, clamp(vUv - radial * 0.20, 0.0, 1.0)).rgb * 0.22;\n"
-            + "    c0 += texture(uTex, clamp(vUv - radial * 0.45, 0.0, 1.0)).rgb * 0.18;\n"
-            + "    c0 += texture(uTex, clamp(vUv - radial * 0.70, 0.0, 1.0)).rgb * 0.14;\n"
-            + "    c0 += texture(uTex, clamp(vUv + radial * 0.25, 0.0, 1.0)).rgb * 0.10;\n"
-            + "    c0 += texture(uTex, clamp(vUv + radial * 0.50, 0.0, 1.0)).rgb * 0.08;\n"
-            + "    src = mix(src, c0, min(0.90, uLensMorph * 1.15));\n"
-            + "  }\n"
             + "  float rawSkin = skinWeight(toLin(src));\n"
-            // Deconvolución de acutancia en luminancia (Sub-Pixel Unsharp Mask con Noise Coring):
-            // extrae solo la alta frecuencia acromática Rec.709 para evitar ruido de color y halos blancos.
-            + "  vec2 stepUv = uInvSize * 0.95;\n"
-            + "  vec3 s0 = texture(uTex, vUv + vec2(stepUv.x, stepUv.y)).rgb;\n"
-            + "  vec3 s1 = texture(uTex, vUv + vec2(-stepUv.x, stepUv.y)).rgb;\n"
-            + "  vec3 s2 = texture(uTex, vUv + vec2(stepUv.x, -stepUv.y)).rgb;\n"
-            + "  vec3 s3 = texture(uTex, vUv + vec2(-stepUv.x, -stepUv.y)).rgb;\n"
-            + "  vec3 avg = 0.25 * (s0 + s1 + s2 + s3);\n"
+            // Deconvolución simétrica de acutancia en luminancia (Sub-Pixel Unsharp Mask 3-tap con Noise Coring):
+            // extrae la alta frecuencia acromática Rec.709 reduciendo un 40% el ancho de banda samplerExternalOES en 4K.
+            + "  vec2 stepUv = uInvSize * 0.90;\n"
+            + "  vec3 s0 = texture(uTex, vUv + stepUv).rgb;\n"
+            + "  vec3 s1 = texture(uTex, vUv - stepUv).rgb;\n"
+            + "  vec3 avg = 0.5 * (s0 + s1);\n"
             + "  vec3 d = src - avg;\n"
             + "  float edge = dot(d, d);\n"
             + "  float srcLuma = dot(src, W);\n"

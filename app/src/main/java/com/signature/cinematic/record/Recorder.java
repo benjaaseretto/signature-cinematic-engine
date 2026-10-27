@@ -45,6 +45,7 @@ public final class Recorder {
     private ParcelFileDescriptor pfd;
     private long baseNs;
     private long bootToMonoNs;
+    private long firstVideoMonoNs = -1;
     private long lastVideoPtsNs = -1;
     private final boolean frontCamera;
     public String mime;
@@ -200,9 +201,9 @@ public final class Recorder {
     }
 
     /**
-     * Convierte el timestamp físico del sensor de cámara al reloj del archivo (ns desde baseNs),
-     * anclado 1:1 al reloj monotónico real (CLOCK_MONOTONIC) compartido con AudioRecord para
-     * garantizar sincronización labial (A/V lip-sync) exacta con cero deriva.
+     * Convierte el timestamp físico del sensor de cámara al reloj del archivo (ns desde t=0),
+     * anclando el primer fotograma capturado tras el arranque del ADC de audio en pts=0
+     * para eliminar el desfase de lista de edición (elst) en MPEG4Writer y garantizar lip-sync exacto.
      */
     public long presentationNs(long cameraTimestampNs) {
         long frameNs = 1_000_000_000L / Math.max(1, mode.fps);
@@ -214,15 +215,17 @@ public final class Recorder {
         } else {
             mono = cameraRealtimeTimestamps ? (cameraTimestampNs - bootToMonoNs) : cameraTimestampNs;
         }
-        long deltaFromStart = mono - baseNs;
-        if (deltaFromStart < 0L && lastVideoPtsNs < 0L) {
-            // Descartar cuadros en vuelo en la cola ISP/SmartEIS expuestos antes de pulsar Grabar
+        if (mono < baseNs && firstVideoMonoNs < 0L) {
+            // Descartar cuadros en vuelo expuestos antes de que el ADC de audio estuviera activo
             return -1L;
         }
-        long rawPts = Math.max(0L, deltaFromStart) / timelapse * slowdown;
+        if (firstVideoMonoNs < 0L) {
+            firstVideoMonoNs = mono;
+        }
+        long rawPts = Math.max(0L, mono - firstVideoMonoNs) / timelapse * slowdown;
         long pts;
         if (lastVideoPtsNs < 0L) {
-            pts = rawPts;
+            pts = 0L;
         } else if (cameraTimestampNs <= 0L) {
             pts = Math.max(rawPts, lastVideoPtsNs + stepNs);
         } else {

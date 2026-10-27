@@ -123,8 +123,8 @@ class ColorPipeline(private val calibration: ColorCalibrationService?) {
         )
 
         fun defaultSensorMatrix(physicalId: String?): FloatArray = when (physicalId) {
-            "2" -> CCM_ULTRAWIDE_JN1
-            "3" -> CCM_MAIN_LYT808
+            "2" -> CCM_MAIN_LYT808
+            "3" -> CCM_ULTRAWIDE_JN1
             "5" -> CCM_TELE_IMX882
             "1" -> CCM_FRONT_IMX816
             else -> CCM_MAIN_LYT808

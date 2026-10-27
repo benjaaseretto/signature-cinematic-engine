@@ -242,7 +242,9 @@ public final class ExposureController {
     public synchronized Output output() {
         Output o = new Output();
         o.aeLock = mode == Mode.LOCKED;
-        o.aeCompensationEv = evBias + (mode != Mode.LOCKED ? highlightBias : 0f);
+        // Solo transmitir evBias explícito del usuario al hardware para evitar oscilaciones en lazo cerrado
+        // (pumping de CONTROL_AE_EXPOSURE_COMPENSATION entre pasos de 10ms y 20ms del ISP).
+        o.aeCompensationEv = evBias;
         if (limits.manualSensor && (manualExposureNs > 0 || manualIso > 0)) {
             o.manual = true;
             o.userManualPro = true;
@@ -273,15 +275,11 @@ public final class ExposureController {
     }
 
     /**
-     * Ganancia lineal para el shader. Compensa los micro-saltos discretos del AE del firmware
-     * sin introducir destellos al conmutar de lente física.
+     * Ganancia lineal para el shader. Se mantiene en 1.0f cuando el AEC del ISP está activo
+     * para evitar interferencia entre la convergencia analógica del sensor y la ganancia post-ISP.
      */
     public synchronized float digitalGain(long exposureNs, int iso) {
-        if (manualActive() || !hasFw || exposureNs <= 0 || iso <= 0) {
-            return 1f;
-        }
-        double diff = fwSmoothLogE - log2((double) exposureNs * iso);
-        return (float) Math.pow(2.0, clamp((float) diff, -0.05f, 0.08f));
+        return 1f;
     }
 
     synchronized double currentLogE() {

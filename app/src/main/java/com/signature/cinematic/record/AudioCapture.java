@@ -214,6 +214,10 @@ final class AudioCapture {
             encoder.configure(f, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
             encoder.start();
             record.startRecording();
+            // Cebar el DMA del Audio HAL (1.3 ms) para absorber la latencia de arranque (~45 ms)
+            // antes de sellar baseNs, garantizando que el primer bloque de audio y video arranquen en t=0.
+            byte[] prime = new byte[64 * BYTES_PER_FRAME];
+            record.read(prime, 0, prime.length);
             baseNs = System.nanoTime();
         } catch (IOException | RuntimeException e) {
             Log.w(TAG, "start", e);
@@ -321,18 +325,10 @@ final class AudioCapture {
                 int n = record.read(pcm, 0, pcm.length);
                 if (n > 0) {
                     int samplesRead = n / BYTES_PER_FRAME;
-                    long ptsNs = framePtsNs(ats, framesRead);
                     processTransparentAudio(pcm, n);
                     levelDb = peakDb(pcm, n);
+                    long ptsUs = (framesRead * 1_000_000L) / SAMPLE_RATE;
                     framesRead += samplesRead;
-                    long chunkDurationUs = (long) samplesRead * 1_000_000L / SAMPLE_RATE;
-                    long rawPtsUs = (ptsNs - baseNs) / 1000L;
-                    long ptsUs;
-                    if (lastPtsUs < 0) {
-                        ptsUs = Math.max(0L, rawPtsUs);
-                    } else {
-                        ptsUs = Math.max(lastPtsUs + chunkDurationUs / 4, rawPtsUs);
-                    }
                     int idx = encoder.dequeueInputBuffer(20_000);
                     if (idx >= 0) {
                         ByteBuffer in = encoder.getInputBuffer(idx);

@@ -29,7 +29,7 @@ final class AudioCapture {
 
     private final Context context;
     private final Muxer muxer;
-    private final long baseNs;
+    private volatile long baseNs;
     private final boolean frontCamera;
     private AudioRecord record;
     private MediaCodec encoder;
@@ -106,15 +106,18 @@ final class AudioCapture {
     private final BiquadState warmthR = new BiquadState();
     private final BiquadState presenceR = new BiquadState();
 
-    AudioCapture(Context context, Muxer muxer, long baseNs, boolean frontCamera) {
+    AudioCapture(Context context, Muxer muxer, boolean frontCamera) {
         this.context = context;
         this.muxer = muxer;
-        this.baseNs = baseNs;
         this.frontCamera = frontCamera;
     }
 
+    /**
+     * Inicializa AudioRecord + MediaCodec AAC, arranca la captura DMA y devuelve el instante
+     * monotónico exacto (System.nanoTime) en que comienza la grabación (o -1L si falla).
+     */
     @SuppressLint("MissingPermission")
-    boolean start() {
+    long start() {
         try {
             int min = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_STEREO,
                     AudioFormat.ENCODING_PCM_16BIT);
@@ -180,7 +183,7 @@ final class AudioCapture {
 
             if (rec == null || rec.getState() != AudioRecord.STATE_INITIALIZED) {
                 Log.e(TAG, "No se pudo inicializar AudioRecord en ninguna fuente");
-                return false;
+                return -1L;
             }
 
             if (targetMic != null) {
@@ -211,16 +214,17 @@ final class AudioCapture {
             encoder.configure(f, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
             encoder.start();
             record.startRecording();
+            baseNs = System.nanoTime();
         } catch (IOException | RuntimeException e) {
             Log.w(TAG, "start", e);
             release();
-            return false;
+            return -1L;
         }
         running = true;
         thread = new Thread(this::loop, "audio");
         thread.setPriority(Thread.MAX_PRIORITY);
         thread.start();
-        return true;
+        return baseNs;
     }
 
     /**
@@ -315,23 +319,29 @@ final class AudioCapture {
         while (true) {
             if (!eosSent && running) {
                 int n = record.read(pcm, 0, pcm.length);
-                long ptsNs = framePtsNs(ats, framesRead);
                 if (n > 0) {
+                    int samplesRead = n / BYTES_PER_FRAME;
+                    long ptsNs = framePtsNs(ats, framesRead);
                     processTransparentAudio(pcm, n);
                     levelDb = peakDb(pcm, n);
-                    framesRead += n / BYTES_PER_FRAME;
-                    long ptsUs = (ptsNs - baseNs) / 1000;
-                    if (ptsUs > lastPtsUs) {
-                        int idx = encoder.dequeueInputBuffer(20_000);
-                        if (idx >= 0) {
-                            ByteBuffer in = encoder.getInputBuffer(idx);
-                            in.clear();
-                            in.put(pcm, 0, n);
-                            encoder.queueInputBuffer(idx, 0, n, ptsUs, 0);
-                            lastPtsUs = ptsUs;
-                        } else {
-                            Log.w(TAG, "Bloque de audio descartado: codificador sin buffers");
-                        }
+                    framesRead += samplesRead;
+                    long chunkDurationUs = (long) samplesRead * 1_000_000L / SAMPLE_RATE;
+                    long rawPtsUs = (ptsNs - baseNs) / 1000L;
+                    long ptsUs;
+                    if (lastPtsUs < 0) {
+                        ptsUs = Math.max(0L, rawPtsUs);
+                    } else {
+                        ptsUs = Math.max(lastPtsUs + chunkDurationUs / 4, rawPtsUs);
+                    }
+                    int idx = encoder.dequeueInputBuffer(20_000);
+                    if (idx >= 0) {
+                        ByteBuffer in = encoder.getInputBuffer(idx);
+                        in.clear();
+                        in.put(pcm, 0, n);
+                        encoder.queueInputBuffer(idx, 0, n, ptsUs, 0);
+                        lastPtsUs = ptsUs;
+                    } else {
+                        Log.w(TAG, "Bloque de audio descartado: codificador sin buffers");
                     }
                 }
             } else if (!eosSent) {
@@ -376,10 +386,11 @@ final class AudioCapture {
     }
 
     private long framePtsNs(AudioTimestamp ats, long frameIndex) {
-        if (record.getTimestamp(ats, AudioTimestamp.TIMEBASE_MONOTONIC) == AudioRecord.SUCCESS) {
+        if (record.getTimestamp(ats, AudioTimestamp.TIMEBASE_MONOTONIC) == AudioRecord.SUCCESS
+                && ats.nanoTime > 0) {
             return ats.nanoTime + (frameIndex - ats.framePosition) * 1_000_000_000L / SAMPLE_RATE;
         }
-        return System.nanoTime() - (long) CHUNK_FRAMES * 1_000_000_000L / SAMPLE_RATE;
+        return baseNs + frameIndex * 1_000_000_000L / SAMPLE_RATE;
     }
 
     private static float peakDb(byte[] pcm, int n) {

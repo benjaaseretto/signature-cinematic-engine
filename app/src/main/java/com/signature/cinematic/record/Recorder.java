@@ -170,40 +170,63 @@ public final class Recorder {
 
     /** Arranca el codificador; los fotogramas deben dibujarse después de esta llamada. */
     public void start() {
-        bootToMonoNs = SystemClock.elapsedRealtimeNanos() - System.nanoTime();
-        baseNs = System.nanoTime();
         video.start();
         drainThread = new Thread(this::drainVideo, "video-drain");
         drainThread.start();
         if (timelapse > 1 || slowdown > 1) {
+            long m0 = System.nanoTime();
+            long b0 = SystemClock.elapsedRealtimeNanos();
+            long m1 = System.nanoTime();
+            bootToMonoNs = b0 - ((m0 + m1) / 2);
+            baseNs = m1;
             audio = null;
             muxer.audioUnavailable();
             return;
         }
-        audio = new AudioCapture(context, muxer, baseNs, frontCamera);
-        if (!audio.start()) {
+        audio = new AudioCapture(context, muxer, frontCamera);
+        long audioStartMonoNs = audio.start();
+        long m0 = System.nanoTime();
+        long b0 = SystemClock.elapsedRealtimeNanos();
+        long m1 = System.nanoTime();
+        bootToMonoNs = b0 - ((m0 + m1) / 2);
+        if (audioStartMonoNs <= 0L) {
             Log.w(TAG, "Grabando sin audio");
+            baseNs = m1;
             audio = null;
             muxer.audioUnavailable();
+        } else {
+            baseNs = audioStartMonoNs;
         }
     }
 
-    /** Convierte el timestamp de cámara al reloj del archivo (ns desde el inicio), manteniendo cadencia sin huecos en cambios de cámara. */
+    /**
+     * Convierte el timestamp físico del sensor de cámara al reloj del archivo (ns desde baseNs),
+     * anclado 1:1 al reloj monotónico real (CLOCK_MONOTONIC) compartido con AudioRecord para
+     * garantizar sincronización labial (A/V lip-sync) exacta con cero deriva.
+     */
     public long presentationNs(long cameraTimestampNs) {
         long frameNs = 1_000_000_000L / Math.max(1, mode.fps);
         long stepNs = Math.max(1000L, frameNs * slowdown / timelapse);
-        long mono = cameraRealtimeTimestamps ? cameraTimestampNs - bootToMonoNs : cameraTimestampNs;
-        long rawPts = Math.max(0, mono - baseNs) / timelapse * slowdown;
-        long pts;
-        if (lastVideoPtsNs < 0) {
-            pts = rawPts;
+        long mono;
+        if (cameraTimestampNs <= 0L) {
+            // Cuadro puente sintetizado por framePacer durante conmutación de cámara
+            mono = System.nanoTime() - frameNs;
         } else {
-            long delta = rawPts - lastVideoPtsNs;
-            if (delta < stepNs / 2 || delta > stepNs * 3 / 2) {
-                pts = lastVideoPtsNs + stepNs;
-            } else {
-                pts = rawPts;
-            }
+            mono = cameraRealtimeTimestamps ? (cameraTimestampNs - bootToMonoNs) : cameraTimestampNs;
+        }
+        long deltaFromStart = mono - baseNs;
+        if (deltaFromStart < 0L && lastVideoPtsNs < 0L) {
+            // Descartar cuadros en vuelo en la cola ISP/SmartEIS expuestos antes de pulsar Grabar
+            return -1L;
+        }
+        long rawPts = Math.max(0L, deltaFromStart) / timelapse * slowdown;
+        long pts;
+        if (lastVideoPtsNs < 0L) {
+            pts = rawPts;
+        } else if (cameraTimestampNs <= 0L) {
+            pts = Math.max(rawPts, lastVideoPtsNs + stepNs);
+        } else {
+            pts = Math.max(rawPts, lastVideoPtsNs + stepNs / 4);
         }
         lastVideoPtsNs = pts;
         return pts;

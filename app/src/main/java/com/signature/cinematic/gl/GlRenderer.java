@@ -573,37 +573,33 @@ public final class GlRenderer {
     private final Runnable framePacer = new Runnable() {
         @Override
         public void run() {
-            if (egl == null || (encoderSurface == null && !isSwitchingCamera)) {
+            if (egl == null || !isSwitchingCamera) {
                 return;
             }
             long t0 = System.nanoTime();
             long frameIntervalNs = 1_000_000_000L / Math.max(15, targetFps);
-            if (lastDeliveredTs == 0) {
-                lastDeliveredTs = t0;
-            } else {
-                lastDeliveredTs += frameIntervalNs;
-            }
-            long effectiveTs = lastDeliveredTs;
             frameCount++;
 
             boolean recorded = false;
             if (encoderSurface != null && frameCount % encoderEvery == 0) {
-                egl.makeCurrent(encoderSurface);
-                if (isSwitchingCamera && freezeTex != 0) {
-                    GLES30.glViewport(0, 0, encoderW, encoderH);
-                    GLES30.glClearColor(0f, 0f, 0f, 1f);
-                    GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
-                    renderFreezeBlit(encoderW, encoderH, encoderRotate ? 90 : 0, false, 1.0f, 1.0f);
-                } else {
-                    buildMvp(encoderW, encoderH, lastExtraRotation + (encoderRotate ? 90 : 0), false, false);
-                    draw(encoderW, encoderH, lastGain, false);
+                long ptsNs = hook.encoderTimeNs(-1L);
+                if (ptsNs >= 0) {
+                    egl.makeCurrent(encoderSurface);
+                    if (freezeTex != 0) {
+                        GLES30.glViewport(0, 0, encoderW, encoderH);
+                        GLES30.glClearColor(0f, 0f, 0f, 1f);
+                        GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT);
+                        renderFreezeBlit(encoderW, encoderH, encoderRotate ? 90 : 0, false, 1.0f, 1.0f);
+                    } else {
+                        buildMvp(encoderW, encoderH, lastExtraRotation + (encoderRotate ? 90 : 0), false, false);
+                        draw(encoderW, encoderH, lastGain, false);
+                    }
+                    egl.setPresentationTime(encoderSurface, ptsNs);
+                    recorded = egl.swap(encoderSurface);
                 }
-                egl.setPresentationTime(encoderSurface, hook.encoderTimeNs(effectiveTs));
-                recorded = egl.swap(encoderSurface);
-                lastEncodedWallNs = System.nanoTime();
             }
 
-            if (previewSurface != null && isSwitchingCamera && freezeTex != 0) {
+            if (previewSurface != null && freezeTex != 0) {
                 egl.makeCurrent(previewSurface);
                 GLES30.glViewport(0, 0, previewW, previewH);
                 GLES30.glClearColor(0f, 0f, 0f, 1f);
@@ -612,8 +608,8 @@ public final class GlRenderer {
                 egl.swap(previewSurface);
             }
 
-            hook.onFrameRendered(effectiveTs, System.nanoTime() - t0, recorded);
-            if (encoderSurface != null || isSwitchingCamera) {
+            hook.onFrameRendered(t0, System.nanoTime() - t0, recorded);
+            if (isSwitchingCamera) {
                 handler.postDelayed(this, Math.max(8L, frameIntervalNs / 1_000_000L));
             }
         }
@@ -682,20 +678,6 @@ public final class GlRenderer {
         surfaceTexture.getTransformMatrix(texMatrix);
         long ts = surfaceTexture.getTimestamp();
         long frameIntervalNs = 1_000_000_000L / Math.max(15, targetFps);
-        boolean recentlyPaced = (t0 - lastEncodedWallNs) < (frameIntervalNs / 2);
-        if (!recentlyPaced) {
-            if (lastDeliveredTs == 0) {
-                lastDeliveredTs = ts;
-            } else {
-                long delta = ts - lastDeliveredTs;
-                if (delta <= 0 || delta > frameIntervalNs * 14 / 10) {
-                    lastDeliveredTs += frameIntervalNs;
-                } else {
-                    lastDeliveredTs = ts;
-                }
-            }
-        }
-        long effectiveTs = lastDeliveredTs > 0 ? lastDeliveredTs : ts;
         frameCount++;
         if (lensMorph > 0.005f) {
             lensMorph *= 0.72f;
@@ -789,20 +771,22 @@ public final class GlRenderer {
         }
 
         boolean recorded = false;
-        if (encoderSurface != null && !recentlyPaced && frameCount % encoderEvery == 0) {
-            egl.makeCurrent(encoderSurface);
-            if (cineActive) {
-                composite(encoderW, encoderH, encoderRotate ? 90 : 0, false, mirror, false, focus, maskFocus);
-            } else {
-                buildMvp(encoderW, encoderH, extraRotation + (encoderRotate ? 90 : 0), mirror, false);
-                draw(encoderW, encoderH, gain, false);
+        if (encoderSurface != null && frameCount % encoderEvery == 0) {
+            long ptsNs = hook.encoderTimeNs(ts);
+            if (ptsNs >= 0) {
+                egl.makeCurrent(encoderSurface);
+                if (cineActive) {
+                    composite(encoderW, encoderH, encoderRotate ? 90 : 0, false, mirror, false, focus, maskFocus);
+                } else {
+                    buildMvp(encoderW, encoderH, extraRotation + (encoderRotate ? 90 : 0), mirror, false);
+                    draw(encoderW, encoderH, gain, false);
+                }
+                if (crossfadeAlpha > 0.001f) {
+                    renderFreezeBlit(encoderW, encoderH, encoderRotate ? 90 : 0, false, crossfadeAlpha, crossfadeZoomScale);
+                }
+                egl.setPresentationTime(encoderSurface, ptsNs);
+                recorded = egl.swap(encoderSurface);
             }
-            if (crossfadeAlpha > 0.001f) {
-                renderFreezeBlit(encoderW, encoderH, encoderRotate ? 90 : 0, false, crossfadeAlpha, crossfadeZoomScale);
-            }
-            egl.setPresentationTime(encoderSurface, hook.encoderTimeNs(effectiveTs));
-            recorded = egl.swap(encoderSurface);
-            lastEncodedWallNs = System.nanoTime();
         }
         if (previewSurface != null) {
             egl.makeCurrent(previewSurface);
@@ -842,10 +826,8 @@ public final class GlRenderer {
             egl.makeCurrent(pbuffer);
             readRaw(sink, extraRotation, mirror, ts);
         }
-        if (!recentlyPaced) {
-            hook.onFrameRendered(effectiveTs, System.nanoTime() - t0, recorded);
-        }
-        if (encoderSurface != null || isSwitchingCamera) {
+        hook.onFrameRendered(ts, System.nanoTime() - t0, recorded);
+        if (isSwitchingCamera) {
             long pacerDelayMs = Math.max(8L, (frameIntervalNs * 12 / 10) / 1_000_000L);
             handler.postDelayed(framePacer, pacerDelayMs);
         }

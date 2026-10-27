@@ -1,0 +1,37 @@
+{
+    "model_id": "mediapipe_selfie",
+    "model_name": "MediaPipe-Selfie-Segmentation",
+    "runtime": "tflite",
+    "precision": "float",
+    "tool_versions": {
+        "qairt": "2.50.0.260828221209"
+    },
+    "model_files": {
+        "mediapipe_selfie.tflite": {
+            "inputs": {
+                "image": {
+                    "shape": [
+                        1,
+                        256,
+                        256,
+                        3
+                    ],
+                    "dtype": "float32"
+                }
+            },
+            "outputs": {
+                "mask": {
+                    "shape": [
+                        1,
+                        256,
+                        256,
+                        1
+                    ],
+                    "dtype": "float32",
+                    "description": "Binary segmentation mask"
+                }
+            }
+        }
+    },
+    "use_case": "Semantic Segmentation"
+}

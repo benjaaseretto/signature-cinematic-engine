@@ -1,0 +1,43 @@
+{
+    "model_id": "depth_anything_v2",
+    "model_name": "Depth-Anything-V2",
+    "runtime": "tflite",
+    "precision": "float",
+    "tool_versions": {
+        "qairt": "2.50.0.260828221209"
+    },
+    "model_files": {
+        "depth_anything_v2.tflite": {
+            "inputs": {
+                "image": {
+                    "shape": [
+                        1,
+                        518,
+                        518,
+                        3
+                    ],
+                    "dtype": "float32",
+                    "io_type": "image",
+                    "image_metadata": {},
+                    "value_range": [
+                        0.0,
+                        1.0
+                    ]
+                }
+            },
+            "outputs": {
+                "depth_estimates": {
+                    "shape": [
+                        1,
+                        518,
+                        518,
+                        1
+                    ],
+                    "dtype": "float32",
+                    "description": "Monocular depth map"
+                }
+            }
+        }
+    },
+    "use_case": "Depth Estimation"
+}

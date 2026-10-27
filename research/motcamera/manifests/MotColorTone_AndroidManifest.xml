@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="35" android:compileSdkVersionCodename="15" package="com.motorola.camera.ai.colortone" platformBuildVersionCode="35" platformBuildVersionName="15">
+    <uses-feature android:name="com.motorola.camera.ai.colortone" android:required="true"/>
+    <permission android:description="@string/permission_camera_state_desc" android:label="@string/permission_camera_state_label" android:name="com.motorola.camera.permission.CAMERA_STATE" android:protectionLevel="signature"/>
+    <permission android:description="@string/permission_mode_provider_desc" android:label="@string/permission_mode_provider_label" android:name="com.motorola.camera.ai.colortone.PERMISSION_ACCESS_PROVIDER" android:protectionLevel="signature"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="com.motorola.aicore.BIND_SERVICE"/>
+    <uses-permission android:name="com.motorola.camera.permission.CAMERA_STATE"/>
+    <uses-permission android:name="com.motorola.camera.ai.colortone.PERMISSION_ACCESS_PROVIDER"/>
+    <uses-permission android:name="com.motorola.camera.permission.COLOR_TONE_TRAINING_STATE"/>
+    <queries>
+        <package android:name="com.motorola.camera5.provider.photos.specialtype"/>
+        <package android:name="com.motorola.camera5"/>
+        <package android:name="com.motorola.aicore"/>
+    </queries>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <permission android:name="com.motorola.camera.ai.colortone.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="signature"/>
+    <uses-permission android:name="com.motorola.camera.ai.colortone.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"/>
+    <application android:allowBackup="false" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:extractNativeLibs="false" android:icon="@mipmap/ic_launcher" android:label="@string/app_name" android:largeHeap="true" android:name="com.motorola.camera.ai.colortone.ColorToneApp" android:requestLegacyExternalStorage="true" android:roundIcon="@mipmap/ic_launcher_round" android:supportsRtl="true" android:theme="@style/AppThemeForApp">
+        <receiver android:enabled="true" android:exported="true" android:name="com.motorola.camera.ai.colortone.CameraStatusReceiver" android:permission="com.motorola.camera.permission.CAMERA_STATE">
+            <intent-filter>
+                <action android:name="com.motorola.internal.CAMERA_START"/>
+                <action android:name="com.motorola.internal.CAMERA_STOP"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:exported="false" android:name="com.motorola.camera.ai.colortone.PackageDataCleanReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED"/>
+                <data android:scheme="package" android:ssp="com.motorola.camera5"/>
+            </intent-filter>
+        </receiver>
+        <provider android:authorities="com.motorola.camera.ai.colortone.ModelContentProvider" android:enabled="true" android:exported="true" android:grantUriPermissions="true" android:name="com.motorola.camera.ai.colortone.ModelContentProvider" android:permission="com.motorola.camera.ai.colortone.PERMISSION_ACCESS_PROVIDER"/>
+        <service android:enabled="true" android:exported="false" android:name="com.motorola.camera.ai.colortone.BackgroundTrainingService">
+            <intent-filter>
+                <action android:name="com.motorola.camera.ai.colortone.BackgroundTrainingService"/>
+            </intent-filter>
+        </service>
+        <service android:directBootAware="false" android:enabled="@bool/enable_system_foreground_service_default" android:exported="false" android:foregroundServiceType="specialUse" android:name="androidx.work.impl.foreground.SystemForegroundService"/>
+        <activity android:configChanges="layoutDirection" android:exported="true" android:launchMode="singleTask" android:name="com.motorola.camera.ai.colortone.CustomizeActivity" android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity android:name="com.motorola.camera.ai.colortone.AdjustActivity" android:screenOrientation="portrait"/>
+        <activity android:configChanges="layoutDirection" android:exported="true" android:launchMode="singleTop" android:name="com.motorola.camera.ai.colortone.AdjustAndTrainActivity" android:screenOrientation="portrait"/>
+        <activity android:exported="true" android:name="com.motorola.camera.ai.colortone.scan.TransparentPermActivity" android:permission="com.motorola.camera.ai.colortone.PERMISSION_ACCESS_PROVIDER" android:theme="@style/Theme.Transparent"/>
+        <uses-library android:name="libOpenCL.so" android:required="false"/>
+        <provider android:authorities="com.motorola.camera.ai.colortone.luckProvider" android:exported="false" android:grantUriPermissions="true" android:name="com.luck.picture.lib.basic.PictureFileProvider">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/ps_file_paths"/>
+        </provider>
+        <activity android:name="com.luck.picture.lib.basic.PictureSelectorSupporterActivity" android:screenOrientation="portrait" android:theme="@style/Base.Theme.NoActionBar"/>
+        <activity android:name="com.luck.picture.lib.basic.PictureSelectorTransparentActivity" android:screenOrientation="portrait" android:theme="@style/Picture.Theme.Translucent"/>
+        <provider android:authorities="com.motorola.camera.ai.colortone.androidx-startup" android:exported="false" android:name="androidx.startup.InitializationProvider">
+            <meta-data android:name="androidx.work.WorkManagerInitializer" android:value="androidx.startup"/>
+            <meta-data android:name="androidx.emoji2.text.EmojiCompatInitializer" android:value="androidx.startup"/>
+            <meta-data android:name="androidx.lifecycle.ProcessLifecycleInitializer" android:value="androidx.startup"/>
+            <meta-data android:name="androidx.profileinstaller.ProfileInstallerInitializer" android:value="androidx.startup"/>
+        </provider>
+        <service android:directBootAware="false" android:enabled="@bool/enable_system_alarm_service_default" android:exported="false" android:name="androidx.work.impl.background.systemalarm.SystemAlarmService"/>
+        <service android:directBootAware="false" android:enabled="@bool/enable_system_job_service_default" android:exported="true" android:name="androidx.work.impl.background.systemjob.SystemJobService" android:permission="android.permission.BIND_JOB_SERVICE"/>
+        <receiver android:directBootAware="false" android:enabled="true" android:exported="false" android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"/>
+        <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED"/>
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy">
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_OKAY"/>
+                <action android:name="android.intent.action.BATTERY_LOW"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy">
+            <intent-filter>
+                <action android:name="android.intent.action.DEVICE_STORAGE_LOW"/>
+                <action android:name="android.intent.action.DEVICE_STORAGE_OK"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:directBootAware="false" android:enabled="false" android:exported="false" android:name="androidx.work.impl.background.systemalarm.RescheduleReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.TIME_SET"/>
+                <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:directBootAware="false" android:enabled="@bool/enable_system_alarm_service_default" android:exported="false" android:name="androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver">
+            <intent-filter>
+                <action android:name="androidx.work.impl.background.systemalarm.UpdateProxies"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:directBootAware="false" android:enabled="true" android:exported="true" android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver" android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="androidx.work.diagnostics.REQUEST_DIAGNOSTICS"/>
+            </intent-filter>
+        </receiver>
+        <service android:directBootAware="true" android:exported="false" android:name="androidx.room.MultiInstanceInvalidationService"/>
+        <receiver android:directBootAware="false" android:enabled="true" android:exported="true" android:name="androidx.profileinstaller.ProfileInstallReceiver" android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="androidx.profileinstaller.action.SKIP_FILE"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION"/>
+            </intent-filter>
+        </receiver>
+        <meta-data android:name="com.android.dynamic.apk.fused.modules" android:value="base"/>
+        <meta-data android:name="com.android.vending.splits" android:resource="@xml/splits0"/>
+    </application>
+</manifest>

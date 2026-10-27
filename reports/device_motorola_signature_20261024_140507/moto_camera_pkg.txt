@@ -1,0 +1,41 @@
+Activity Resolver Table:
+  Full MIME Types:
+      image/*:
+        d5f507e com.motorola.camera5/com.motorola.camera.editor.DocEditorActivity filter b8fd9df
+          Action: "android.motorola.action.DOCUMENT_IMAGE_EDITOR"
+          Category: "android.intent.category.DEFAULT"
+          StaticType: "image"
+          mPriority=0, mOrder=0, mHasStaticPartialTypes=true, mHasDynamicPartialTypes=false
+        11ccce2 com.motorola.camera5/com.motorola.camera.adobe_scan.editor.AdobeDocEditActivityLauncher filter 87c4873
+          Action: "android.motorola.action.DOCUMENT_IMAGE_EDITOR"
+          Category: "android.intent.category.DEFAULT"
+          StaticType: "image"
+          mPriority=0, mOrder=0, mHasStaticPartialTypes=true, mHasDynamicPartialTypes=false
+
+  Wild MIME Types:
+      image:
+        d5f507e com.motorola.camera5/com.motorola.camera.editor.DocEditorActivity filter b8fd9df
+          Action: "android.motorola.action.DOCUMENT_IMAGE_EDITOR"
+          Category: "android.intent.category.DEFAULT"
+          StaticType: "image"
+          mPriority=0, mOrder=0, mHasStaticPartialTypes=true, mHasDynamicPartialTypes=false
+        11ccce2 com.motorola.camera5/com.motorola.camera.adobe_scan.editor.AdobeDocEditActivityLauncher filter 87c4873
+          Action: "android.motorola.action.DOCUMENT_IMAGE_EDITOR"
+          Category: "android.intent.category.DEFAULT"
+          StaticType: "image"
+          mPriority=0, mOrder=0, mHasStaticPartialTypes=true, mHasDynamicPartialTypes=false
+
+  Non-Data Actions:
+      android.media.action.IMAGE_CAPTURE:
+        d83aca3 com.motorola.camera5/com.motorola.camera.Camera filter 9ddf359
+          Action: "android.media.action.IMAGE_CAPTURE"
+          Category: "android.intent.category.DEFAULT"
+      com.google.camera.action.LOCATION_SETTINGS:
+        4300d1b com.motorola.camera5/com.motorola.camera.LaunchLocSettingAction filter a55feb8
+          Action: "com.google.camera.action.LOCATION_SETTINGS"
+          Category: "android.intent.category.DEFAULT"
+      motorola.camera.intent.action.FRONT_CAMERA:
+        d83aca3 com.motorola.camera5/com.motorola.camera.Camera filter 37beb1e
+          Action: "motorola.camera.intent.action.FRONT_CAMERA"
+          Category: "android.intent.category.DEFAULT"
+Unable to find package: com.motorola.camera3

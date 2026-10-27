@@ -1,0 +1,21 @@
+# Build outputs
+build/
+*.apk
+*.idsig
+*.dex
+
+# Scratch & temporary files
+scratch/
+third_party/dl/
+reports/qa_ios/*.mp4
+*.mp4
+
+# Large TFLite weights (published in GitHub Releases)
+app/src/main/assets/models/depth_anything_v2.tflite
+
+# macOS / IDE
+.DS_Store
+.idea/
+*.iml
+.gradle/
+local.properties

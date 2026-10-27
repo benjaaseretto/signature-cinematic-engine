@@ -1,0 +1,238 @@
+  {
+    "name": "india",
+    "uuid": "C2547172-B319-449E-B0EE-40CC9328B4B6",
+    "version": 1,
+    "cover": "cover.png",
+    "minSdkVersion": "3.4.0",
+    "supportedAspectRatio": "9v16",
+    "translation": [
+      {
+        "originalText": "india",
+        "targetLanguage": "zh_CN",
+        "targetText": "美颜模板"
+      }
+    ],
+    "effectContent": {
+		
+      "makeup": [
+        {
+          "type": "Shadow",
+          "canReplace": 1,
+          "params": [
+			  {
+				"key": "Makeup Shadow Package Id",
+				"value": "44D0BE17-B28D-4E21-AA01-A1D3EB0EDBFC",
+				"type": "string"
+			  },
+			  {
+				"key": "Makeup Shadow Intensity",
+				"value": 0.2,
+				"type": "float"
+			  }
+          ]
+        }
+      ],
+    "beauty": [
+      {
+        "params": [
+         {
+            "key": "Beauty Effect",
+            "value": true,
+            "type": "boolean"
+         }
+        ]
+      },
+      {
+        "canReplace": 1,
+        "params": [
+          {
+            "key": "Advanced Beauty Enable",
+            "value": true,
+            "type": "boolean"
+          },
+
+
+          {
+            "key": "Advanced Beauty Type",
+            "value": -1,
+            "type": "int"
+          },
+          {
+              "key": "Advanced Beauty Neat Blur Thresh",
+              "type": "float",
+              "value": 0.01
+          },
+          {
+              "key": "Advanced Beauty Neat Blur Radius",
+              "type": "float",
+              "value": 0.1
+          },
+          {
+              "key": "Advanced Beauty Neat Blur2 Thresh",
+              "type": "float",
+              "value": 0.1
+          },  
+          {
+              "key": "Advanced Beauty Neat Blur2 Radius",
+              "type": "float",
+              "value": 0.6
+          },           
+          {
+              "key": "Advanced Beauty Smooth Min Interpolation Factor",
+              "type": "float",
+              "value": 0.5
+          },                         
+          {
+              "key": "Advanced Beauty Smooth Max Interpolation Factor",
+              "type": "float",
+              "value": 0.4
+          },                       
+
+
+          {
+            "key": "Advanced Beauty Intensity",
+            "value": 0.35,
+            "type": "float"
+          }
+        ]
+      },
+      {
+        "canReplace": 1,
+        "params": [
+          {
+            "key": "Whitening Lut Enabled",
+            "value": true,
+            "type": "boolean"
+          },
+          {
+            "key": "Whitening Lut File",
+            "value": "4_vantage.mslut",
+            "type": "path"
+          },
+          {
+            "key": "Beauty Whitening",
+            "value": 0.05,
+            "type": "float"
+          }
+        ]
+      }
+    ],
+    "shape": [
+      {
+        "params": [
+         {
+            "key": "Face Mesh Internal Enabled",
+            "value": true,
+            "type": "boolean"
+         }
+        ]
+      },
+	  {
+        "type": "Face Size",
+        "canReplace": 1,
+        "params": [
+          {
+            "key": "Face Mesh Face Size Custom Package Id",
+            "value": "63BD3F32-D01B-4755-92D5-0DE361E4045A",
+            "type": "string"
+          },
+          {
+            "key": "Face Mesh Face Size Degree",
+            "value": 0.35,
+            "type": "float"
+          }
+        ]
+      },
+	  {
+        "type": "Eye Size",
+        "canReplace": 1,
+        "params": [
+          {
+            "key": "Face Mesh Eye Size Custom Package Id",
+            "value": "AAD90D4A-F387-4E9E-B9C5-DA255398CA7E",
+            "type": "string"
+          },
+          {
+            "key": "Face Mesh Eye Size Degree",
+            "value": 0.2,
+            "type": "float"
+          }
+        ]
+      },
+	  {
+        "type": "Malar Width",
+        "canReplace": 1,
+        "params": [
+          {
+            "key": "Face Mesh Malar Width Custom Package Id",
+            "value": "3F5EEA8D-AEB4-4A1A-9950-DFDF85FFA887",
+            "type": "string"
+          },
+          {
+            "key": "Face Mesh Malar Width Degree",
+            "value": 0.05,
+            "type": "float"
+          }
+        ]
+      }
+    ],
+    "microShape": [
+      {
+          "params": [
+           {
+              "key": "Advanced Beauty Enable",
+              "value": true,
+              "type": "boolean"
+           }
+          ]
+      },
+      {
+        "type": "Remove Dark Circles",
+        "canReplace": 1,
+        "params": [
+          {
+            "key": "Advanced Beauty Remove Dark Circles Intensity",
+            "value": 0.15,
+            "type": "float"
+          }
+        ]
+      },
+      {
+        "type": "Remove Nasolabial Folds",
+        "canReplace": 1,
+        "params": [
+          {
+            "key": "Advanced Beauty Remove Nasolabial Folds Intensity",
+            "value": 0.15,
+            "type": "float"
+          }
+        ]
+      },
+	  {
+        "type": "Whiten Teeth",
+        "canReplace": 1,
+        "params": [
+          {
+            "key": "Advanced Beauty Whiten Teeth Intensity",
+            "value": 0.55,
+            "type": "float"
+          }
+        ]
+      },
+      {
+        "type": "Brighten Eyes",
+        "canReplace": 1,
+        "params": [
+          {
+            "key": "Advanced Beauty Brighten Eyes Intensity",
+            "value": 0.4,
+            "type": "float"
+          }
+        ]
+      }
+    ]
+    }
+  }
+
+
+

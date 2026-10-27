@@ -1,0 +1,975 @@
+{
+    "control_variables": [
+        "Face",
+        "DRC",
+        "Lux Idx"
+    ],
+    "default": {
+        "trigger_core_data": {
+            "trigger": [
+                {
+                    "start": 0,
+                    "end": 0,
+                    "trigger": [
+                        {
+                            "start": 1,
+                            "end": 2,
+                            "trigger": [
+                                {
+                                    "start": 0,
+                                    "end": 240,
+                                    "region_data": {
+                                        "contrast": 0.8,
+                                        "brightness": 30.0
+                                    }
+                                },
+                                {
+                                    "start": 280,
+                                    "end": 360,
+                                    "region_data": {
+                                        "contrast": 0.65,
+                                        "brightness": 45.0
+                                    }
+                                },
+                                {
+                                    "start": 400,
+                                    "end": 900,
+                                    "region_data": {
+                                        "contrast": 0.7,
+                                        "brightness": 60.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "start": 3,
+                            "end": 6,
+                            "trigger": [
+                                {
+                                    "start": 0,
+                                    "end": 240,
+                                    "region_data": {
+                                        "contrast": 0.8,
+                                        "brightness": 30.0
+                                    }
+                                },
+                                {
+                                    "start": 280,
+                                    "end": 360,
+                                    "region_data": {
+                                        "contrast": 0.6,
+                                        "brightness": 45.0
+                                    }
+                                },
+                                {
+                                    "start": 400,
+                                    "end": 900,
+                                    "region_data": {
+                                        "contrast": 0.65,
+                                        "brightness": 65.0
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "start": 1,
+                    "end": 1,
+                    "trigger": [
+                        {
+                            "start": 1,
+                            "end": 2,
+                            "trigger": [
+                                {
+                                    "start": 0,
+                                    "end": 240,
+                                    "region_data": {
+                                        "contrast": 0.45,
+                                        "brightness": 40.0
+                                    }
+                                },
+                                {
+                                    "start": 280,
+                                    "end": 360,
+                                    "region_data": {
+                                        "contrast": 0.5,
+                                        "brightness": 40.0
+                                    }
+                                },
+                                {
+                                    "start": 400,
+                                    "end": 900,
+                                    "region_data": {
+                                        "contrast": 0.65,
+                                        "brightness": 55.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "start": 3,
+                            "end": 6,
+                            "trigger": [
+                                {
+                                    "start": 0,
+                                    "end": 240,
+                                    "region_data": {
+                                        "contrast": 0.5,
+                                        "brightness": 40.0
+                                    }
+                                },
+                                {
+                                    "start": 280,
+                                    "end": 360,
+                                    "region_data": {
+                                        "contrast": 0.55,
+                                        "brightness": 50.0
+                                    }
+                                },
+                                {
+                                    "start": 400,
+                                    "end": 900,
+                                    "region_data": {
+                                        "contrast": 0.70,
+                                        "brightness": 60.0
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "camera-type": {
+        "back-main": {
+            "trigger_core_data": {
+                "trigger": [
+                    {
+                        "start": 0,
+                        "end": 0,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.8,
+                                            "brightness": 30.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.65,
+                                            "brightness": 45.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.7,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.8,
+                                            "brightness": 30.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.6,
+                                            "brightness": 45.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.65,
+                                            "brightness": 65.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "start": 1,
+                        "end": 1,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.45,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.65,
+                                            "brightness": 55.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.55,
+                                            "brightness": 50.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.70,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "back-wide": {
+            "trigger_core_data": {
+                "trigger": [
+                    {
+                        "start": 0,
+                        "end": 0,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.8,
+                                            "brightness": 30.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.65,
+                                            "brightness": 45.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.7,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.8,
+                                            "brightness": 30.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.6,
+                                            "brightness": 45.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.65,
+                                            "brightness": 65.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "start": 1,
+                        "end": 1,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.45,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.65,
+                                            "brightness": 55.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.55,
+                                            "brightness": 50.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.70,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "back-tele": {
+            "trigger_core_data": {
+                "trigger": [
+                    {
+                        "start": 0,
+                        "end": 0,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.8,
+                                            "brightness": 30.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.65,
+                                            "brightness": 45.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.7,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.8,
+                                            "brightness": 30.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.6,
+                                            "brightness": 45.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.65,
+                                            "brightness": 65.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "start": 1,
+                        "end": 1,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.45,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.65,
+                                            "brightness": 55.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.55,
+                                            "brightness": 50.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.70,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "front-main": {
+            "trigger_core_data": {
+                "trigger": [
+                    {
+                        "start": 0,
+                        "end": 0,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 20.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 20.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 20.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 25.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 25.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 20.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "start": 1,
+                        "end": 1,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 20.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 20.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 20.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 25.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 25.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.30,
+                                            "brightness": 20.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "back-depth_1x": {
+            "trigger_core_data": {
+                "trigger": [
+                    {
+                        "start": 0,
+                        "end": 0,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.55,
+                                            "brightness": 38.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.6,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.4,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.48,
+                                            "brightness": 35.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 65.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "start": 1,
+                        "end": 1,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.4,
+                                            "brightness": 35.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.4,
+                                            "brightness": 30.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.25,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.35,
+                                            "brightness": 35.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.35,
+                                            "brightness": 35.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.20,
+                                            "brightness": 65.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "back-depth_3x": {
+            "trigger_core_data": {
+                "trigger": [
+                    {
+                        "start": 0,
+                        "end": 0,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.55,
+                                            "brightness": 38.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.6,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.4,
+                                            "brightness": 40.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.48,
+                                            "brightness": 35.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.5,
+                                            "brightness": 65.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "start": 1,
+                        "end": 1,
+                        "trigger": [
+                            {
+                                "start": 1,
+                                "end": 2,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.4,
+                                            "brightness": 35.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.4,
+                                            "brightness": 30.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.25,
+                                            "brightness": 60.0
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                "start": 3,
+                                "end": 6,
+                                "trigger": [
+                                    {
+                                        "start": 0,
+                                        "end": 240,
+                                        "region_data": {
+                                            "contrast": 0.35,
+                                            "brightness": 35.0
+                                        }
+                                    },
+                                    {
+                                        "start": 280,
+                                        "end": 360,
+                                        "region_data": {
+                                            "contrast": 0.35,
+                                            "brightness": 35.0
+                                        }
+                                    },
+                                    {
+                                        "start": 400,
+                                        "end": 900,
+                                        "region_data": {
+                                            "contrast": 0.20,
+                                            "brightness": 65.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

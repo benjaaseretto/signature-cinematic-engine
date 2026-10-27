@@ -1,0 +1,62 @@
+{
+  "leap": {
+    "requires_times": "3-10",
+    "requires_battery_power": "3-10",
+    "filter_train_type": 0
+  },
+  "arcf": {
+    "requires_times": "5-20",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  },
+  "cybert": {
+    "requires_times": "10-30",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  },
+  "scout": {
+    "requires_times": "10-30",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  },
+  "oulu": {
+    "requires_times": "10-30",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  },
+  "aito": {
+    "requires_times": "10-30",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  },
+  "roadstr": {
+    "requires_times": "10-30",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  },
+  "vienna": {
+    "requires_times": "10-30",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  },
+  "lamy": {
+    "requires_times": "10-30",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  },
+  "vantage": {
+    "requires_times": "3-10",
+    "requires_battery_power": "3-10",
+    "filter_train_type": 1
+  },
+  "marvel": {
+    "requires_times": "10-30",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  },
+  "volcano": {
+    "requires_times": "10-30",
+    "requires_battery_power": "2-10",
+    "filter_train_type": 1
+  }
+}

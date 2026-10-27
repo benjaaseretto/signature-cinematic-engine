@@ -1,0 +1,21 @@
+# Dispositivo
+ro.product.manufacturer                          motorola
+ro.product.model                                 motorola signature
+ro.product.device                                vantage
+ro.product.name                                  vantage_g
+ro.soc.manufacturer                              QTI
+ro.soc.model                                     SM8845
+ro.board.platform                                canoe
+ro.hardware                                      qcom
+ro.build.version.release                         17
+ro.build.version.sdk                             37
+ro.build.version.security_patch                  2026-08-01
+ro.build.fingerprint                             motorola/vantage_g/vantage:17/A171WVH.21-16-16/4548c-b328b:user/release-keys
+ro.vendor.build.fingerprint                      motorola/vantage_g/vantage:16/WWV36HV-16-ST1.1/4548c:user/release-keys
+ro.build.display.id                              A171WVH.21-16-16
+ro.vendor.camera.extensions.package              
+ro.vendor.camera.extensions.service              
+persist.vendor.camera.privapp.list               org.codeaurora.snapcam
+ro.surface_flinger.has_HDR_display               true
+ro.surface_flinger.has_wide_color_display        true
+ro.media.xml_variant.codecs                      _canoe_sku3

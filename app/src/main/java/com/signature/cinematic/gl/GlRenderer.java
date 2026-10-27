@@ -185,7 +185,7 @@ public final class GlRenderer {
     private volatile float glow;
     private volatile float grain;
     private volatile float lensMorph;
-    private volatile float dceStrength = 0.35f;
+    private volatile float dceStrength = 0.0f;
     private volatile float focusX = 0.5f;
     private volatile float focusY = 0.5f;
     private volatile int statsInterval = 2;

@@ -127,7 +127,7 @@ public final class PhotoSaver {
         File tmp = File.createTempFile("photo", ".jpg", ctx.getCacheDir());
         try {
             try (OutputStream out = new FileOutputStream(tmp)) {
-                bmp.compress(Bitmap.CompressFormat.JPEG, 95, out);
+                bmp.compress(Bitmap.CompressFormat.JPEG, 98, out);
             }
             bmp.recycle();
             ExifInterface dst = new ExifInterface(tmp.getAbsolutePath());
@@ -172,7 +172,7 @@ public final class PhotoSaver {
         File tmp = File.createTempFile("portrait", ".jpg", ctx.getCacheDir());
         try {
             try (OutputStream out = new FileOutputStream(tmp)) {
-                bmp.compress(Bitmap.CompressFormat.JPEG, 95, out);
+                bmp.compress(Bitmap.CompressFormat.JPEG, 98, out);
             }
             ExifInterface dst = new ExifInterface(tmp.getAbsolutePath());
             dst.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(ExifInterface.ORIENTATION_NORMAL));

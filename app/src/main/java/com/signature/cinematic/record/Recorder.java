@@ -157,7 +157,7 @@ public final class Recorder {
         f.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1);
         f.setInteger(MediaFormat.KEY_COLOR_STANDARD, MediaFormat.COLOR_STANDARD_BT709);
         f.setInteger(MediaFormat.KEY_COLOR_TRANSFER, MediaFormat.COLOR_TRANSFER_SDR_VIDEO);
-        f.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_LIMITED);
+        f.setInteger(MediaFormat.KEY_COLOR_RANGE, MediaFormat.COLOR_RANGE_FULL);
         f.setInteger(MediaFormat.KEY_COMPLEXITY, 100);
         f.setInteger(MediaFormat.KEY_PRIORITY, 0);
         if (m.equals(MediaFormat.MIMETYPE_VIDEO_HEVC)) {

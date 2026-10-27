@@ -308,19 +308,18 @@ object PhotoLook {
                         val diffLuma = 0.2126f * diffR + 0.7152f * diffG + 0.0722f * diffB
                         val absDiff = kotlin.math.abs(diffLuma)
 
-                        // Coring:
-                        // < 2.5: micro-ruido plano de sensor (se filtra ligeramente)
-                        // 2.5 .. 28.0: micro-textura rica de la escena (se realza con 'strength')
-                        // > 35.0: borde de alto contraste (se reduce ganancia para suprimir halos blancos)
+                        // Deconvolución acromática Rec.709 con protección de sombras (evita amplificar ruido cromático)
+                        val luma = 0.2126f * r + 0.7152f * g + 0.0722f * b
+                        val shadowWeight = ((luma - 12f) / 36f).coerceIn(0.15f, 1f)
                         val gain = when {
-                            absDiff < 2.5f -> -0.15f * strength
-                            absDiff < 28f -> strength
-                            else -> strength * (35f / absDiff).coerceAtMost(1f)
+                            absDiff < 2.5f -> -0.12f * strength
+                            absDiff < 28f -> strength * shadowWeight
+                            else -> strength * shadowWeight * (35f / absDiff).coerceAtMost(1f)
                         }
-
-                        val ro = (r + diffR * gain + 0.5f).toInt().coerceIn(0, 255)
-                        val go = (g + diffG * gain + 0.5f).toInt().coerceIn(0, 255)
-                        val bo = (b + diffB * gain + 0.5f).toInt().coerceIn(0, 255)
+                        val deltaLuma = diffLuma * gain
+                        val ro = (r + (diffR * 0.35f + diffLuma * 0.65f) * gain + 0.5f).toInt().coerceIn(0, 255)
+                        val go = (g + (diffG * 0.35f + diffLuma * 0.65f) * gain + 0.5f).toInt().coerceIn(0, 255)
+                        val bo = (b + (diffB * 0.35f + diffLuma * 0.65f) * gain + 0.5f).toInt().coerceIn(0, 255)
                         px[i] = (c and -0x1000000) or (ro shl 16) or (go shl 8) or bo
                     }
                 }

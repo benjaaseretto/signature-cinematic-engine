@@ -241,8 +241,8 @@ public final class MainActivity extends Activity implements VideoEngine.Ui {
         topShowFormat = prefs.getBoolean("top_format", true);
         tonePad = prefs.getFloat("tone_pad", 0f);
         colorPad = prefs.getFloat("color_pad", 0f);
-        softSkin = prefs.getFloat("soft_skin", 0.35f);
-        glow = prefs.getFloat("glow", 0.15f);
+        softSkin = prefs.getFloat("soft_skin_v2", 0.14f);
+        glow = prefs.getFloat("glow_v2", 0.0f);
         grain = prefs.getFloat("grain", 0f);
         buildUi();
         sound.load(MediaActionSound.SHUTTER_CLICK);
@@ -371,8 +371,8 @@ public final class MainActivity extends Activity implements VideoEngine.Ui {
         prefs.edit()
                 .putFloat("tone_pad", tonePad)
                 .putFloat("color_pad", colorPad)
-                .putFloat("soft_skin", softSkin)
-                .putFloat("glow", glow)
+                .putFloat("soft_skin_v2", softSkin)
+                .putFloat("glow_v2", glow)
                 .putFloat("grain", grain)
                 .apply();
     }
@@ -395,6 +395,16 @@ public final class MainActivity extends Activity implements VideoEngine.Ui {
             manualShutterNs = 0;
             manualIso = 0;
             manualWb = 1;
+            ev = 0f;
+            if (evBar != null) {
+                evBar.setProgress(20);
+            }
+            if (evValue != null) {
+                evValue.setText("+0.0 EV");
+            }
+            if (focusView != null) {
+                focusView.setEv(0f);
+            }
         }
         engine.setCinematic(false);
         engine.setTorch(false);
@@ -2465,17 +2475,13 @@ public final class MainActivity extends Activity implements VideoEngine.Ui {
 
             @Override
             public boolean onScroll(MotionEvent a, MotionEvent b, float dx, float dy) {
-                if (engine == null || b.getPointerCount() > 1 || Math.abs(dy) < Math.abs(dx)) {
+                if (engine == null || b.getPointerCount() > 1 || Math.abs(dy) < Math.abs(dx) * 1.4f || !focused) {
                     return false;
                 }
-                if (!focused) {
-                    focusView.showAt(preview.getWidth() / 2f, preview.getHeight() / 2f);
-                    focused = true;
-                }
-                // Curva de respuesta logarítmica/progresiva iOS 27.2 para control fino de exposición
+                // Curva de respuesta logarítmica/progresiva iOS 27.2 para control fino de exposición tras enfocar
                 float normDy = dy / Math.max(1f, preview.getHeight());
                 float logWeight = 0.65f + 0.55f * (float) Math.log1p(Math.abs(ev));
-                setEv(ev + normDy * 3.6f * logWeight);
+                setEv(ev + normDy * 2.4f * logWeight);
                 return true;
             }
 

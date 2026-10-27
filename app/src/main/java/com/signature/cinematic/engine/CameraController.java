@@ -265,13 +265,9 @@ public final class CameraController {
         b.addTarget(surface);
         b.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         b.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, strictFpsRange(mode.fps));
-        b.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO);
+        b.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_50HZ);
 
         long frameDurationNs = 1_000_000_000L / mode.fps;
-        if (caps.manualSensor) {
-            b.set(CaptureRequest.SENSOR_FRAME_DURATION, frameDurationNs);
-        }
-
         ExposureController.Output e = settings.exposure;
         boolean useManualSensor = e.manual && caps.manualSensor && e.userManualPro;
         if (useManualSensor) {
@@ -281,9 +277,7 @@ public final class CameraController {
             b.set(CaptureRequest.SENSOR_FRAME_DURATION, frameDurationNs);
         } else {
             b.set(CaptureRequest.CONTROL_AE_MODE, aeMode());
-            // En TEMPLATE_RECORD (still == null), el AEC del ISP de Qualcomm expone ~0.35 EV más abajo que en foto;
-            // compensamos +0.35 EV base en video para obtener una imagen luminosa, limpia y natural estilo iOS.
-            float targetEv = e.aeCompensationEv + (still == null ? 0.35f : 0f);
+            float targetEv = e.aeCompensationEv + (still == null ? 0.15f : 0f);
             int idx = Math.round(targetEv / caps.aeCompStep);
             idx = Math.max(caps.aeCompRange.getLower(), Math.min(caps.aeCompRange.getUpper(), idx));
             b.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, idx);
@@ -333,11 +327,7 @@ public final class CameraController {
             b.set(CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY);
         } else {
             b.set(CaptureRequest.NOISE_REDUCTION_MODE, noiseReductionMode(hq));
-            int eMode = edgeMode(hq);
-            if (eMode == CameraMetadata.EDGE_MODE_HIGH_QUALITY && CameraCaps.has(caps.edgeModes, CameraMetadata.EDGE_MODE_FAST)) {
-                eMode = CameraMetadata.EDGE_MODE_FAST;
-            }
-            b.set(CaptureRequest.EDGE_MODE, eMode);
+            b.set(CaptureRequest.EDGE_MODE, edgeMode(hq));
         }
         if (settings.tonemap == IspTonemap.SRGB && caps.tonemapPresetSrgb) {
             b.set(CaptureRequest.TONEMAP_MODE, CameraMetadata.TONEMAP_MODE_PRESET_CURVE);
@@ -354,6 +344,10 @@ public final class CameraController {
             b.set(CaptureRequest.DISTORTION_CORRECTION_MODE, hq
                     ? CameraMetadata.DISTORTION_CORRECTION_MODE_HIGH_QUALITY : CameraMetadata.DISTORTION_CORRECTION_MODE_FAST);
         }
+        b.set(CaptureRequest.SHADING_MODE, hq
+                ? CameraMetadata.SHADING_MODE_HIGH_QUALITY : CameraMetadata.SHADING_MODE_FAST);
+        b.set(CaptureRequest.HOT_PIXEL_MODE, hq
+                ? CameraMetadata.HOT_PIXEL_MODE_HIGH_QUALITY : CameraMetadata.HOT_PIXEL_MODE_FAST);
         b.set(CaptureRequest.CONTROL_ZOOM_RATIO, settings.zoom);
         applySafeHalHints(b);
         return b;
@@ -377,11 +371,13 @@ public final class CameraController {
 
         if (caps != null && !caps.front) {
             // Activar SAT (Sensor Array Transit / Multi-Camera Seamless Switching) en Motorola Signature
+            // sin forzar SATFallback (W2UW / T2W), para que 1x use siempre el sensor principal Sony LYT-828 ("3")
+            // y 3x use el teleobjetivo periscópico ("5") a máxima resolución óptica nativa.
             setVendorByte(b, "com.lenovo.moto.control.is_sat_mode", (byte) 1);
             setVendorInt(b, "com.lenovo.moto.control.video_sat_4k30fps_support", 1);
             setVendorInt(b, "com.lenovo.moto.control.video_sat_4k60fps_support", 1);
-            setVendorInt(b, "com.lenovo.moto.SATFallback.W2UW", 1);
-            setVendorInt(b, "com.lenovo.moto.SATFallback.T2W", 1);
+            setVendorInt(b, "com.lenovo.moto.SATFallback.W2UW", 0);
+            setVendorInt(b, "com.lenovo.moto.SATFallback.T2W", 0);
 
             // En sesiones de foto (still != null), habilitar In-Sensor Crop remosaic y Macro dinámico;
             // en sesiones de video (still == null), mantener la topología de lectura del sensor estable
@@ -728,11 +724,14 @@ public final class CameraController {
                 b.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE,
                         CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
             }
-            b.set(CaptureRequest.TONEMAP_MODE, CameraMetadata.TONEMAP_MODE_FAST);
+            b.set(CaptureRequest.SHADING_MODE, CameraMetadata.SHADING_MODE_HIGH_QUALITY);
+            b.set(CaptureRequest.HOT_PIXEL_MODE, CameraMetadata.HOT_PIXEL_MODE_HIGH_QUALITY);
+            b.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_50HZ);
+            b.set(CaptureRequest.TONEMAP_MODE, CameraMetadata.TONEMAP_MODE_HIGH_QUALITY);
             b.set(CaptureRequest.CONTROL_ZOOM_RATIO, settings.zoom);
             applySafeHalHints(b);
             b.set(CaptureRequest.JPEG_ORIENTATION, pendingOrientation);
-            b.set(CaptureRequest.JPEG_QUALITY, (byte) 95);
+            b.set(CaptureRequest.JPEG_QUALITY, (byte) 100);
             session.capture(b.build(), new CameraCaptureSession.CaptureCallback() {
                 @Override
                 public void onCaptureCompleted(CameraCaptureSession s, CaptureRequest req, TotalCaptureResult r) {

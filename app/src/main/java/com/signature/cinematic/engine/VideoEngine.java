@@ -65,7 +65,7 @@ public final class VideoEngine implements GlRenderer.FrameHook, CameraController
     private final Handler main = new Handler(Looper.getMainLooper());
     private final CameraController camera;
     private final GlRenderer gl;
-    private final FrameMeta.Ring ring = new FrameMeta.Ring(32);
+    private final FrameMeta.Ring ring = new FrameMeta.Ring(64);
     private final FrameMeta frameMeta = new FrameMeta();
     private final FrameMeta lastMeta = new FrameMeta();
     private final MetricsLogger metrics;
@@ -209,6 +209,7 @@ public final class VideoEngine implements GlRenderer.FrameHook, CameraController
             ui.onError("Modo Cine no disponible en " + m.label() + ": se desactivó");
         }
         gl.setTargetFps(m.fps);
+        gl.setStatsInterval(4);
         Surface target = gl.start(m.width, m.height, c.sensorOrientation, c.front);
         camera.open(c, m, target, s);
         scheduleWarmRecorder(c, m, s == null);
@@ -505,7 +506,6 @@ public final class VideoEngine implements GlRenderer.FrameHook, CameraController
             return;
         }
         gl.setFocusPoint(viewX, viewY);
-        gl.setStatsInterval(1);
         ExposureController e = exposure;
         if (e != null) {
             e.triggerFastConvergence();
@@ -673,10 +673,14 @@ public final class VideoEngine implements GlRenderer.FrameHook, CameraController
     @Override
     public float prepareFrame(long timestampNs, float[] baseOut, float[] lookOut) {
         ExposureController e = exposure;
-        if (!ring.find(timestampNs, frameMeta)) {
+        if (!ring.findOrLatest(timestampNs, frameMeta)) {
             pipeline.prepare(null, baseOut, lookOut);
             return 1f;
         }
+        if (e != null) {
+            e.onCaptureResult(frameMeta.exposureNs, frameMeta.iso, frameMeta.aperture);
+        }
+        pipeline.onFrameMeta(frameMeta);
         pipeline.prepare(frameMeta, baseOut, lookOut);
         return e != null ? e.digitalGain(frameMeta.exposureNs, frameMeta.iso) : 1f;
     }
@@ -757,9 +761,7 @@ public final class VideoEngine implements GlRenderer.FrameHook, CameraController
         ring.put(meta);
         gl.notifyNewCameraActive();
         if (meta.physicalId != null && lastPhysicalId != null && !meta.physicalId.equals(lastPhysicalId)) {
-            // El HAL acaba de conmutar de sensor físico (.5x <-> 1x <-> 3x): fusión óptica suave y puente de luminancia
             gl.notifySensorSwitch();
-            gl.triggerLensTransition(0.85f);
             ExposureController exp = exposure;
             if (exp != null) {
                 exp.onSensorSwitched();
@@ -771,11 +773,6 @@ public final class VideoEngine implements GlRenderer.FrameHook, CameraController
         synchronized (lastMeta) {
             lastMeta.copyFrom(meta);
         }
-        ExposureController e = exposure;
-        if (e != null) {
-            e.onCaptureResult(meta.exposureNs, meta.iso, meta.aperture);
-        }
-        pipeline.onFrameMeta(meta);
     }
 
     @Override

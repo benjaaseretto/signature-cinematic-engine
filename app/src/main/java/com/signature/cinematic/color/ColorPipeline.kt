@@ -52,9 +52,15 @@ class ColorPipeline(private val calibration: ColorCalibrationService?) {
             IDENTITY.copyInto(baseOut)
             return
         }
+        updateLens(meta)
+        if (!calibratedFrame) {
+            // La imagen YUV del ISP ya viene con CCM y AWB de fábrica en 14 bits;
+            // mantener base identidad evita dobles correcciones y saltos cromáticos entre cuadros.
+            IDENTITY.copyInto(baseOut)
+            return
+        }
         val g = meta.wbGains
         val wbc = wb.correctionFor(g[0], g[1], g[2], g[3], meta.physicalId)
-        updateLens(meta)
         for (r in 0 until 3) for (c in 0 until 3) baseOut[r * 3 + c] = lens[r * 3 + c] * wbc[c]
     }
 

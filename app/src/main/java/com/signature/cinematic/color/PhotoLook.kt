@@ -129,13 +129,14 @@ object PhotoLook {
         val rawSkin = skinWeight(ri / 255f, gi / 255f, bi / 255f)
         val skin = rawSkin * p.skinProtect
         val su = p.skinUndertone
-        // Calibración de fase de piel estilo Leica (idéntica a Shaders.FRAGMENT):
-        // neutraliza tintes magenta artificiales y verdosos de iluminación interior sin afectar grises neutros
-        val magentaExcess = max(0f, (r0 + b0) * 0.5f - g0 * 1.08f) * rawSkin
-        val greenExcess = max(0f, g0 - (r0 * 0.72f + b0 * 0.28f)) * rawSkin
-        val sr = (r0 - magentaExcess * 0.18f + greenExcess * 0.14f) * su[0] * (1f + 0.025f * colorPad)
-        val sg = (g0 + magentaExcess * 0.15f - greenExcess * 0.32f) * su[1] * (1f - 0.024f * rawSkin)
-        val sb = (b0 - magentaExcess * 0.28f) * su[2] * (1f - 0.020f * colorPad)
+        val baseLuma = max(W[0] * r0 + W[1] * g0 + W[2] * b0, 1e-5f)
+        var sr = r0 * su[0] * (1f + 0.020f * colorPad)
+        var sg = g0 * su[1]
+        var sb = b0 * su[2] * (1f - 0.015f * colorPad)
+        val skinNorm = baseLuma / max(W[0] * sr + W[1] * sg + W[2] * sb, 1e-5f)
+        sr *= skinNorm
+        sg *= skinNorm
+        sb *= skinNorm
         var r = m[0] * r0 + m[1] * g0 + m[2] * b0
         var g = m[3] * r0 + m[4] * g0 + m[5] * b0
         var b = m[6] * r0 + m[7] * g0 + m[8] * b0
@@ -144,8 +145,7 @@ object PhotoLook {
         b += (sb - b) * skin
 
         val y = max(W[0] * r + W[1] * g + W[2] * b, 1e-5f)
-        // Roll-off logarítmico/hiperbólico suave desde knee 0.68 (estética Leica Authentic / Vibrant)
-        val knee = 0.68f
+        val knee = 0.92f
         val yc = if (y <= knee) y else knee + (1f - knee) * tanh((y - knee) / (1f - knee))
         val u = table(GAM, yc) * 255f
         val ti = min(u.toInt(), 254)
@@ -154,14 +154,8 @@ object PhotoLook {
             val padCurve = yt.coerceIn(0f, 1f).pow(1f - tonePad * 0.28f)
             yt = padCurve + (yt - padCurve) * (skin * p.skinLumaAnchor)
         }
-        val ySkinSafe = yt + (table(GAM, yc) - yt) * (skin * p.skinLumaAnchor * 0.42f)
-        var yl = table(LIN, ySkinSafe)
-        // Micro-contraste rico en tonos medios (idéntico al shader, solo cuando hay saturación cromática para preservar neutralidad de grises)
-        if (rawSkin > 0.01f || kotlin.math.abs(r0 - g0) + kotlin.math.abs(g0 - b0) > 0.02f) {
-            val midMask = smoothstep(0.08f, 0.35f, yl) * (1f - smoothstep(0.55f, 0.85f, yl))
-            val midContrast = 1f + (yl - 0.38f) * 0.045f * midMask * (1f - 0.35f * skin)
-            yl = (yl * midContrast).coerceIn(0f, 1f)
-        }
+        val ySkinSafe = yt + (table(GAM, yc) - yt) * (skin * p.skinLumaAnchor * 0.30f)
+        val yl = table(LIN, ySkinSafe)
         val s = yl / y
         r *= s
         g *= s
@@ -187,9 +181,9 @@ object PhotoLook {
         g *= 1f + (st[1] + (ht[1] - st[1]) * tm - 1f) * tf
         b *= 1f + (st[2] + (ht[2] - st[2]) * tm - 1f) * tf
 
-        // 3. Altas luces: desaturación progresiva hacia blanco neutro (estética fílmica Leica / haluro de plata)
-        val hlFactor = ((yl - 0.75f) / (0.98f - 0.75f)).coerceIn(0f, 1f)
-        val hlDesat = 1f - hlFactor.pow(1.35f) * 0.90f
+        // 3. Altas luces: desaturación suave solo en blancos especulares extremos (>0.88 lineal)
+        val hlFactor = ((yl - 0.88f) / (1.0f - 0.88f)).coerceIn(0f, 1f)
+        val hlDesat = 1f - hlFactor * hlFactor * 0.35f
         r = yl + (r - yl) * hlDesat
         g = yl + (g - yl) * hlDesat
         b = yl + (b - yl) * hlDesat

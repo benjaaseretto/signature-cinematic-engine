@@ -55,5 +55,40 @@ public final class FrameMeta {
             out.copyFrom(best);
             return true;
         }
+
+        /**
+         * Busca el metadato exacto (≤ 2 ms) o, si la cola EIS desplazó el timestamp o el callback
+         * de captura aún está en vuelo, devuelve el metadato válido más cercano/reciente para
+         * evitar caídas a matriz identidad entre fotogramas.
+         */
+        public synchronized boolean findOrLatest(long timestampNs, FrameMeta out) {
+            if (find(timestampNs, out)) {
+                return true;
+            }
+            FrameMeta closest = null;
+            long closestDiff = Long.MAX_VALUE;
+            FrameMeta newest = null;
+            long newestTs = Long.MIN_VALUE;
+            for (FrameMeta m : items) {
+                if (m.timestampNs == 0) {
+                    continue;
+                }
+                long d = Math.abs(m.timestampNs - timestampNs);
+                if (d < closestDiff && d <= 60_000_000L) {
+                    closestDiff = d;
+                    closest = m;
+                }
+                if (m.timestampNs > newestTs) {
+                    newestTs = m.timestampNs;
+                    newest = m;
+                }
+            }
+            FrameMeta pick = closest != null ? closest : newest;
+            if (pick == null) {
+                return false;
+            }
+            out.copyFrom(pick);
+            return true;
+        }
     }
 }

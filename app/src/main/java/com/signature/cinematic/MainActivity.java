@@ -241,7 +241,7 @@ public final class MainActivity extends Activity implements VideoEngine.Ui {
         topShowFormat = prefs.getBoolean("top_format", true);
         tonePad = prefs.getFloat("tone_pad", 0f);
         colorPad = prefs.getFloat("color_pad", 0f);
-        softSkin = prefs.getFloat("soft_skin_v2", 0.14f);
+        softSkin = prefs.getFloat("soft_skin_v3", 0.0f);
         glow = prefs.getFloat("glow_v2", 0.0f);
         grain = prefs.getFloat("grain", 0f);
         buildUi();
@@ -2394,27 +2394,9 @@ public final class MainActivity extends Activity implements VideoEngine.Ui {
                 });
         GestureDetector gestures = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             private boolean focused;
-            private boolean downTriggeredFocus;
 
             @Override
             public boolean onDown(MotionEvent e) {
-                downTriggeredFocus = false;
-                if (engine != null && e.getPointerCount() == 1
-                        && popoverSheet.getVisibility() != View.VISIBLE
-                        && stylesSheet.getVisibility() != View.VISIBLE
-                        && evRow.getVisibility() != View.VISIBLE
-                        && preview.getWidth() > 0 && preview.getHeight() > 0) {
-                    if (engine.isLocked()) {
-                        engine.setLocked(false);
-                        lockPill.setVisibility(View.GONE);
-                    }
-                    // Respuesta instantánea en MotionEvent.ACTION_DOWN (< 16ms de latencia táctil)
-                    engine.focusAt(e.getX() / preview.getWidth(), e.getY() / preview.getHeight());
-                    focusView.showAt(e.getX(), e.getY());
-                    preview.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
-                    focused = true;
-                    downTriggeredFocus = true;
-                }
                 return true;
             }
 
@@ -2428,7 +2410,7 @@ public final class MainActivity extends Activity implements VideoEngine.Ui {
                     closeAllPopovers();
                     return true;
                 }
-                if (!downTriggeredFocus) {
+                if (preview.getWidth() > 0 && preview.getHeight() > 0) {
                     if (engine.isLocked()) {
                         engine.setLocked(false);
                         lockPill.setVisibility(View.GONE);

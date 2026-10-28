@@ -204,20 +204,13 @@ final class Shaders {
             + "  vec3 src = texture(uTex, vUv).rgb;\n"
             + "  if (uBypass > 0.5) { fragColor = vec4(src, 1.0); return; }\n"
             + "  float rawSkin = skinWeight(toLin(src));\n"
-            // Deconvolución simétrica de acutancia en luminancia (Sub-Pixel Unsharp Mask 3-tap con Noise Coring):
-            // extrae la alta frecuencia acromática Rec.709 reduciendo un 40% el ancho de banda samplerExternalOES en 4K.
-            + "  vec2 stepUv = uInvSize * 0.90;\n"
-            + "  vec3 s0 = texture(uTex, vUv + stepUv).rgb;\n"
-            + "  vec3 s1 = texture(uTex, vUv - stepUv).rgb;\n"
-            + "  vec3 avg = 0.5 * (s0 + s1);\n"
-            + "  vec3 d = src - avg;\n"
-            + "  float edge = dot(d, d);\n"
-            + "  float srcLuma = dot(src, W);\n"
-            + "  float lumaDetail = dot(d, W);\n"
-            + "  float shadowGuard = smoothstep(0.03, 0.14, srcLuma);\n"
-            + "  float detailBoost = (1.0 - rawSkin * 0.85) * shadowGuard * smoothstep(0.00020, 0.0030, edge) * (1.0 - smoothstep(0.022, 0.080, edge)) * 0.28;\n"
-            + "  src = clamp(src + vec3(lumaDetail * detailBoost), 0.0, 1.0);\n"
             + "  if ((uSoftSkin > 0.01 && rawSkin > 0.06) || uGlow > 0.01) {\n"
+            + "    vec2 stepUv = uInvSize * 1.15;\n"
+            + "    vec3 s0 = texture(uTex, vUv + stepUv).rgb;\n"
+            + "    vec3 s1 = texture(uTex, vUv - stepUv).rgb;\n"
+            + "    vec3 avg = 0.5 * (s0 + s1);\n"
+            + "    vec3 d = src - avg;\n"
+            + "    float edge = dot(d, d);\n"
             + "    float bilateral = exp(-edge / 0.0038);\n"
             + "    float softAmt = uSoftSkin * rawSkin * bilateral * 0.42;\n"
             + "    src = mix(src, avg, softAmt);\n"
@@ -229,32 +222,20 @@ final class Shaders {
             + "  vec3 base = uBase * toLin(src) * uGain;\n"
             + "  float baseLuma = max(dot(base, W), 1e-5);\n"
             + "  float skin = skinWeight(base) * uSkin;\n"
-            // Ciencia de Color ARRI Reveal / Hasselblad HNCS con preservación estricta de luminancia Rec.709:
-            // suprime el viraje al magenta artificial y el amarillo verdoso sin oscurecer el canal verde (G).
-            + "  float magentaExcess = max(0.0, (base.r + base.b) * 0.5 - base.g * 1.06);\n"
-            + "  float greenExcess = max(0.0, base.g - (base.r * 0.62 + base.b * 0.38));\n"
-            + "  vec3 leicaSkinBase = vec3(\n"
-            + "      base.r + greenExcess * 0.16 - magentaExcess * 0.10,\n"
-            + "      base.g - greenExcess * 0.14 + magentaExcess * 0.12,\n"
-            + "      base.b - magentaExcess * 0.20 + greenExcess * 0.04);\n"
-            + "  vec3 skinTone = leicaSkinBase * uSkinUndertone * vec3(1.0 + 0.025 * uColorPad, 1.0, 1.0 - 0.020 * uColorPad);\n"
-            + "  skinTone *= (baseLuma * (1.0 + 0.020 * rawSkin)) / max(dot(skinTone, W), 1e-5);\n"
+            + "  vec3 skinTone = base * uSkinUndertone * vec3(1.0 + 0.020 * uColorPad, 1.0, 1.0 - 0.015 * uColorPad);\n"
+            + "  skinTone *= baseLuma / max(dot(skinTone, W), 1e-5);\n"
             + "  vec3 c = mix(uLook * base, skinTone, skin);\n"
             + "  float y = max(dot(c, W), 1e-5);\n"
-            // Roll-off perceptual híbrido ACES 2.0 / ARRI ALF-4 (knee 0.84) con preservación de tono y pureza cromática
-            + "  const float knee = 0.84;\n"
+            // Roll-off de seguridad solo en el extremo superior (knee 0.92) para no comprimir dos veces con ToneCurve
+            + "  const float knee = 0.92;\n"
             + "  float yc = y <= knee ? y : knee + (1.0 - knee) * tanh((y - knee) / (1.0 - knee));\n"
             + "  float yt = texture(uTone, vec2(toGam1(yc) * (255.0 / 256.0) + 0.5 / 256.0, 0.5)).r;\n"
-            // Separación tridimensional de tonos medios (micro-contraste S-curve con punto negro real en 0.0)
-            + "  float midMask = smoothstep(0.06, 0.28, yt) * (1.0 - smoothstep(0.62, 0.90, yt));\n"
-            + "  yt = clamp(yt + (yt - 0.36) * 0.035 * midMask * (1.0 - 0.45 * skin), 0.0, 1.0);\n"
             // Control Pad 2D (Tono): modifica sombras y medios de la escena anclando la luminancia de la piel.
             + "  if (abs(uTonePad) > 0.01) {\n"
             + "    float padCurve = pow(clamp(yt, 0.0, 1.0), 1.0 - uTonePad * 0.28);\n"
             + "    yt = mix(padCurve, yt, skin * uSkinAnchor);\n"
             + "  }\n"
-            // Anclaje de luminancia de piel del perfil (evita caras oscuras cuando la escena tiene alto contraste).
-            + "  float ySkinSafe = mix(yt, max(yt, toGam1(yc)), skin * uSkinAnchor * 0.50);\n"
+            + "  float ySkinSafe = mix(yt, toGam1(yc), skin * uSkinAnchor * 0.30);\n"
             + "  float yl = toLin1(ySkinSafe);\n"
             + "  c *= yl / y;\n"
             // 1. Saturación por zonas (sombras, medios, altas) con protección de piel
@@ -265,15 +246,10 @@ final class Shaders {
             + "  c = vec3(yl) + (c - vec3(yl)) * sat;\n"
             // 2. Tintes de sombras y altas luces
             + "  c *= mix(vec3(1.0), mix(uShadowTint, uHighTint, smoothstep(0.05, 0.6, yl)), 1.0 - 0.7 * skin);\n"
-            // 3. Altas luces: desaturación progresiva hacia blanco neutro (estética fílmica Leica / haluro de plata)
-            + "  float hlFactor = clamp((yl - 0.78) / (0.99 - 0.78), 0.0, 1.0);\n"
-            + "  float hlDesat = 1.0 - pow(hlFactor, 1.30) * 0.85;\n"
+            // 3. Altas luces: desaturación suave solo en blancos especulares extremos (>0.88 lineal)
+            + "  float hlFactor = clamp((yl - 0.88) / (1.0 - 0.88), 0.0, 1.0);\n"
+            + "  float hlDesat = 1.0 - hlFactor * hlFactor * 0.35;\n"
             + "  c = mix(vec3(yl), c, hlDesat);\n"
-            // 4. Viñeta óptica ultra-sutil (máximo 4% en bordes extremos para no oscurecer la escena)
-            + "  vec2 vigUv = vUv - vec2(0.5);\n"
-            + "  float vigR2 = dot(vigUv, vigUv);\n"
-            + "  float vignette = 1.0 - vigR2 * 0.05 * (1.0 - 0.70 * hlFactor) * (1.0 - uMono * 0.15);\n"
-            + "  c *= clamp(vignette, 0.95, 1.0);\n"
             // 4. Soft-clipping y compresión de gamut (evita clipping duro por canal en 1.0)
             + "  float m = max(c.r, max(c.g, c.b));\n"
             + "  if (m > 1.0) { c = mix(c, vec3(yl), clamp((m - 1.0) / max(m - yl, 1e-4), 0.0, 1.0)); }\n"

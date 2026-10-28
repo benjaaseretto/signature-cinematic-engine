@@ -51,17 +51,17 @@ class ColorProfile private constructor(
         ) = ColorProfile(id, name, tone, matrix, sat[0], sat[1], sat[2], skin, skinUndertone, skinAnchor,
             shadowTint, highlightTint, mono, gamut, description)
 
-        /** Leica Authentic / Signature Pro: tonos de piel orgánicos sin viraje magenta ni verdoso, roll-off suave. */
+        /** Leica Authentic / Signature Pro: colorimetría real D65 sin dominante cálida/magenta en blancos, piel fiel y roll-off natural. */
         @JvmField
         val SIGNATURE_PRO = profile(
             "pro", "Signature Leica Authentic",
-            "Leica Authentic: tonos de piel orgánicos sin dominante magenta/verdosa, roll-off suave en altas luces y micro-contraste rico.",
-            tone = ToneCurve(1.04f, 0.43f, 0.66f, 0.88f, 0.0f, 0.99f),
-            matrix = whiteShift(1.014f, 1.0f, 0.985f),
-            sat = floatArrayOf(0.94f, 1.04f, 0.88f), skin = 0.90f,
-            skinUndertone = floatArrayOf(1.022f, 0.992f, 0.984f), skinAnchor = 0.78f,
-            shadowTint = floatArrayOf(0.992f, 1.0f, 1.012f), highlightTint = floatArrayOf(1.012f, 1.0f, 0.986f),
-            gamut = 0.72f,
+            "Leica Authentic: blancos y grises neutros D65, tonos de piel fieles y roll-off suave en altas luces.",
+            tone = ToneCurve(1.015f, 0.44f, 0.76f, 0.35f, 0.0f, 1.0f),
+            matrix = IDENTITY,
+            sat = floatArrayOf(0.99f, 1.02f, 0.97f), skin = 0.75f,
+            skinUndertone = floatArrayOf(1.004f, 1.000f, 0.996f), skinAnchor = 0.60f,
+            shadowTint = ONE, highlightTint = ONE,
+            gamut = 0.35f,
         )
 
         /** Subtono de piel Ámbar (Photographic Styles 3). */

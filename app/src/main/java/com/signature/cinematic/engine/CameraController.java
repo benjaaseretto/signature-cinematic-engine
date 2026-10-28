@@ -265,7 +265,7 @@ public final class CameraController {
         b.addTarget(surface);
         b.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         b.set(CaptureRequest.CONTROL_AE_TARGET_FPS_RANGE, strictFpsRange(mode.fps));
-        b.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_AUTO);
+        b.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, CameraMetadata.CONTROL_AE_ANTIBANDING_MODE_50HZ);
 
         long frameDurationNs = 1_000_000_000L / mode.fps;
         ExposureController.Output e = settings.exposure;
@@ -292,13 +292,13 @@ public final class CameraController {
         if (settings.focusRegion != null && caps.maxAfRegions > 0) {
             b.set(CaptureRequest.CONTROL_AF_REGIONS, new MeteringRectangle[] {settings.focusRegion});
         }
-        if (settings.focusRegion != null && caps.maxAeRegions > 0 && !useManualSensor) {
+        // En video solo usar medición puntual AE si el usuario bloqueó AE/AF (pulsación larga);
+        // evita saltos bruscos de 2-3 pasos de luz al tocar el visor o hacer zoom.
+        if (settings.focusRegion != null && caps.maxAeRegions > 0 && !useManualSensor
+                && (still != null || settings.focusLock)) {
             b.set(CaptureRequest.CONTROL_AE_REGIONS, new MeteringRectangle[] {settings.focusRegion});
         }
-        if (settings.focusRegion != null && caps.maxAwbRegions > 0 && !settings.awbLock) {
-            b.set(CaptureRequest.CONTROL_AWB_REGIONS, new MeteringRectangle[] {settings.focusRegion});
-        }
-        if (settings.focusLock || settings.focusRegion != null) {
+        if (settings.focusLock || (still != null && settings.focusRegion != null)) {
             b.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_AUTO);
         } else if (still != null && caps.afContinuousPicture) {
             b.set(CaptureRequest.CONTROL_AF_MODE, CameraMetadata.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
@@ -316,8 +316,11 @@ public final class CameraController {
             b.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_TORCH);
         }
 
-        // Detección de rostros continua para exposición prioritaria (Face-Priority AE estilo iPhone Smart HDR)
-        b.set(CaptureRequest.STATISTICS_FACE_DETECT_MODE, CameraMetadata.STATISTICS_FACE_DETECT_MODE_SIMPLE);
+        // En foto activar Face-Priority AE; en video desactivarlo para evitar saltos bruscos de exposición
+        // cuando el detector de rostros del ISP engancha o suelta caras/monitores.
+        b.set(CaptureRequest.STATISTICS_FACE_DETECT_MODE,
+                still != null ? CameraMetadata.STATISTICS_FACE_DETECT_MODE_SIMPLE
+                        : CameraMetadata.STATISTICS_FACE_DETECT_MODE_OFF);
 
         boolean hq = !settings.thermalLimited && mode.fps <= 30;
         if (caps.front) {
@@ -901,6 +904,9 @@ public final class CameraController {
                 return;
             }
             boolean bandCrossed = lensBandForZoom(clamped) != lensBandForZoom(settings.zoom);
+            if (!settings.focusLock && settings.focusRegion != null) {
+                settings.focusRegion = null;
+            }
             settings.zoom = clamped;
             long now = SystemClock.elapsedRealtimeNanos();
             if (bandCrossed || (now - lastZoomSubmitNs) >= 15_000_000L) {
@@ -975,9 +981,9 @@ public final class CameraController {
             int x = Math.max(left, Math.min(left + w - size, cx - size / 2));
             int y = Math.max(top, Math.min(top + h - size, cy - size / 2));
             settings.focusRegion = new MeteringRectangle(x, y, size, size, MeteringRectangle.METERING_WEIGHT_MAX);
-            cancelAfFirst = true;
-            triggerAf = true;
-            triggerAePrecapture = !settings.exposure.manual;
+            cancelAfFirst = still != null || settings.focusLock;
+            triggerAf = still != null || settings.focusLock;
+            triggerAePrecapture = false;
             lastExposureSubmitNs = 0;
             applyRepeating();
         });

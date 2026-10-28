@@ -128,11 +128,14 @@ public final class ExposureController {
             }
         } else {
             fwLogE = le;
-            if (!hasFw || apertureSwitched) {
-                // Al cambiar de lente físico (distinto f-number), el ISP ajusta exposureNs*iso inmediatamente
-                // para compensar la apertura física; sincronizamos fwSmoothLogE para evitar saltos de ganancia digital.
+            if (!hasFw || apertureSwitched || Math.abs(le - fwSmoothLogE) > 0.32) {
+                // Al cambiar de lente físico (distinto f-number) o ante un cambio grande de escena,
+                // sincronizamos fwSmoothLogE al instante; para micro-escalones discretos del AEC (≤0.32 EV)
+                // interpolamos suavemente en lazo cerrado con el cuadro actual.
                 fwSmoothLogE = le;
                 hasFw = true;
+            } else {
+                fwSmoothLogE += (le - fwSmoothLogE) * 0.25;
             }
             if (!seeded) {
                 logE = le;
@@ -275,11 +278,15 @@ public final class ExposureController {
     }
 
     /**
-     * Ganancia lineal para el shader. Se mantiene en 1.0f cuando el AEC del ISP está activo
-     * para evitar interferencia entre la convergencia analógica del sensor y la ganancia post-ISP.
+     * Ganancia lineal para el shader. Amortigua únicamente los micro-escalones discretos de tabla
+     * del AEC del ISP (p. ej. salto 20ms/ISO640 <-> 10ms/ISO1187 = 0.11 EV) en sincronía exacta de cuadro.
      */
     public synchronized float digitalGain(long exposureNs, int iso) {
-        return 1f;
+        if (manualActive() || !hasFw || exposureNs <= 0 || iso <= 0) {
+            return 1f;
+        }
+        double diff = fwSmoothLogE - log2((double) exposureNs * iso);
+        return (float) Math.pow(2.0, clamp((float) diff, -0.09f, 0.09f));
     }
 
     synchronized double currentLogE() {
